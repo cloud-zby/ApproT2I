@@ -1,0 +1,178 @@
+# Approximate Cache for Text-to-Image Diffusion Models
+## Installation
+改变Pip镜像
+```bash
+mkdir -p ~/.pip
+cat > ~/.pip/pip.conf <<EOF
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+extra-index-url =
+    https://mirrors.aliyun.com/pypi/simple/
+    https://pypi.org/simple
+trusted-host =
+    pypi.tuna.tsinghua.edu.cn
+    mirrors.aliyun.com
+    pypi.org
+EOF
+```
+通过venv安装依赖
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install diffusers == 0.37.0
+pip install modelscope
+pip install "setuptools < 75.0.0"
+pip install accelerate
+pip install faiss-cpu
+pip install torch torchvision
+pip install "transformers <= 4.50.0"
+pip install invisible_watermark
+pip install accelerate
+pip install safetensors
+pip install nvitop
+pip install scipy
+pip install matplotlib
+pip install scikit-image
+pip install git+https://github.com/openai/CLIP.git --no-build-isolation
+pip install pyarrow
+pip install pandas
+pip install openpyxl
+```
+## Data & Model Preparation
+```bash
+# 下载数据，使得存在三个文件：dataset/COCO2014_dataset.json，dataset/DiffusionDB_dataset.parquet，dataset/PicaPic_dataset.parquet
+pip install huggingface_hub
+export HF_ENDPOINT=https://hf-mirror.com
+huggingface-cli download zbyzby/ApproximateCache --local-dir ./dataset --local-dir-use-symlinks False
+
+# 下载模型
+modelscope download --model stabilityai/stable-diffusion-xl-base-1.0 --local_dir ./model_ckpt/stable-diffusion-xl-base-1.0
+modelscope download --model google/siglip2-giant-opt-patch16-384 --local_dir ./model_ckpt/siglip2-giant-opt-patch16-384
+```
+## Running
+You can run all-in-one script to execute the entire pipeline.
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+# 以四卡模式运行
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+NUM_GPUS=4 nohup ./run.sh > run.log 2>&1 &
+# 以两卡模式运行
+export CUDA_VISIBLE_DEVICES=0,1
+NUM_GPUS=2 nohup ./run.sh > run.log 2>&1 &
+ps aux | grep '[r]un.sh'
+```
+Or, you can run the following commands step by step.
+```bash
+# 0. 设置环境变量
+export HF_ENDPOINT=https://hf-mirror.com
+
+# 1. 生成原始图像轨迹（无近似缓存）
+source .venv/bin/activate
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+nohup python ./traj_all.py --split 0 --step 1000 > traj_0.log 2>&1 &
+nohup python ./traj_all.py --split 1 --step 1000 > traj_1.log 2>&1 &
+nohup python ./traj_all.py --split 2 --step 1000 > traj_2.log 2>&1 &
+nohup python ./traj_all.py --split 3 --step 1000 > traj_3.log 2>&1 &
+ps aux | grep '[t]raj_all.py'
+cat traj.log
+
+# 2. 生成小步数的图像轨迹（无近似缓存）
+source .venv/bin/activate
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+nohup python ./traj_small_steps.py --split 0 --step 1000 > traj_small_steps_0.log 2>&1 &
+nohup python ./traj_small_steps.py --split 1 --step 1000 > traj_small_steps_1.log 2>&1 &
+nohup python ./traj_small_steps.py --split 2 --step 1000 > traj_small_steps_2.log 2>&1 &
+nohup python ./traj_small_steps.py --split 3 --step 1000 > traj_small_steps_3.log 2>&1 &
+ps aux | grep '[t]raj_small_steps.py'
+cat traj_small_steps.log
+
+# 3. 收集小步数图像生成过程中的注意力分数（无近似缓存）
+source .venv/bin/activate
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+nohup python ./attention_small_steps.py --split 0 --step 1000 > attention_small_steps_0.log 2>&1 &
+nohup python ./attention_small_steps.py --split 1 --step 1000 > attention_small_steps_1.log 2>&1 &
+nohup python ./attention_small_steps.py --split 2 --step 1000 > attention_small_steps_2.log 2>&1 &
+nohup python ./attention_small_steps.py --split 3 --step 1000 > attention_small_steps_3.log 2>&1 &
+ps aux | grep '[t]raj_small_steps.py'
+cat attention_small_steps.log
+
+# 4. 检索向量数据库（文-图相似性）
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./retrieve.py --num_of_splits 4
+
+# 5. 检索向量数据库（文-文相似性）
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./retrieve_by_prompt.py --num_of_splits 4
+
+# 6. NIRVANA生成图像
+source .venv/bin/activate
+export CUDA_VISIBLE_DEVICES=0
+CUDA_VISIBLE_DEVICES=0 python ./nirvana_generate.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=0 nohup python ./nirvana_generate.py --num_of_splits 4 > nirvana.log 2>&1 &
+ps aux | grep '[n]irvana_generate.py'
+cat nirvana.log
+
+# 7. ReCon生成图像
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./recon_generate.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=1 nohup python ./recon_generate.py --num_of_splits 4 > recon.log 2>&1 &
+ps aux | grep '[r]econ_generate.py'
+cat recon.log
+
+# 8. ReDi生成图像
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./redi_generate.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=2 nohup python ./redi_generate.py --num_of_splits 4 > redi.log 2>&1 &
+ps aux | grep '[r]edi_generate.py'
+cat redi.log
+
+# 9. MoDM生成图像
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./modm_generate.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=3 nohup python ./modm_generate.py --num_of_splits 4 > modm.log 2>&1 &
+ps aux | grep '[m]odm_generate.py'
+cat modm.log
+
+# 10. 本方法生成图像（latent粒度进行融合）
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./ours_generate.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=1 python ./ours_generate_new.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=0 nohup python ./ours_generate.py --num_of_splits 4 > ours.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_new.py --num_of_splits 4 > ours_new.log 2>&1 &
+ps aux | grep '[o]urs_generate.py'
+cat ours.log
+
+# 11. 本方法生成图像（token粒度根据交叉注意力分数进行融合）
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./ours_generate_mix.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=1 python ./ours_generate_mix_new.py --num_of_splits 4
+CUDA_VISIBLE_DEVICES=0 nohup python ./ours_generate_mix.py --num_of_splits 4 > ours_mix.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_mix_new.py --num_of_splits 4 > ours_mix_new.log 2>&1 &
+ps aux | grep '[o]urs_generate_mix.py'
+cat ours_mix.log
+
+# 12. 比较生成质量
+source .venv/bin/activate
+CUDA_VISIBLE_DEVICES=0 python ./compare.py
+CUDA_VISIBLE_DEVICES=0 nohup python ./compare.py > compare.log 2>&1 &
+```
+比较结果将会保存在当前目录下的`comparison_images`文件夹中，包含多个SVG图和汇总的Excel表。
+## Troubleshooting
+如果卡住
+```bash
+# 4090
+ssh Alex@192.168.151.232
+Aiqi1115!
+sudo killall -u zbyzby
+Aiqi1115!
+# 5090
+ssh infra41@192.168.151.41
+shareAI@2025
+sudo killall -u zby
+shareAI@2025
+# Copy to H200
+```bash
+rsync -avzP --ignore-existing --exclude='.git' --exclude='__pycache__'  --exclude='.venv' -e "ssh -p 30022"  /home/zbyzby/ApproT2I   zby@root@ssh-502.default@218.84.152.122://gemini/platform/public/ai_infra/zby/
+```
+
