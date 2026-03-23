@@ -21,10 +21,10 @@ class Config:
     TRAJ_ALL_TOTAL_INFERENCE_STEPS = 50
 
     # Number of denoising steps when running short-step trajectories/attention capture.
-    SMALL_STEPS_TOTAL_INFERENCE_STEPS = 20
+    SMALL_STEPS_TOTAL_INFERENCE_STEPS = 10
 
     # Effective early steps to run in short-step mode.
-    SMALL_STEPS_REAL_INFERENCE_STEPS = 10
+    SMALL_STEPS_REAL_INFERENCE_STEPS = 5
 
     # Seed used in retrieval pipelines.
     RETRIEVE_SEED = 42
@@ -48,7 +48,8 @@ class Config:
     GENERATION_BEGIN_TIMESTEP = 15
 
     # Number of self trajectory steps used before latent fusion.
-    PRELIMINARY_STEPS = 6
+    PRELIMINARY_STEPS = (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS) * SMALL_STEPS_REAL_INFERENCE_STEPS
+    assert PRELIMINARY_STEPS.is_integer(), f"PRELIMINARY_STEPS should be an integer, but got {PRELIMINARY_STEPS}. Please adjust SMALL_STEPS_REAL_INFERENCE_STEPS or GENERATION_BEGIN_TIMESTEP to ensure this."
 
     # Seed for torch.Generator in every pipeline sampling call.
     GENERATOR_SEED = 1024
