@@ -48,7 +48,7 @@ class Config:
     GENERATION_BEGIN_TIMESTEP = 15
 
     # Number of self trajectory steps used before latent fusion.
-    PRELIMINARY_STEPS = (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS) * SMALL_STEPS_REAL_INFERENCE_STEPS
+    PRELIMINARY_STEPS = (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS) * SMALL_STEPS_TOTAL_INFERENCE_STEPS
     assert PRELIMINARY_STEPS.is_integer(), f"PRELIMINARY_STEPS should be an integer, but got {PRELIMINARY_STEPS}. Please adjust SMALL_STEPS_REAL_INFERENCE_STEPS or GENERATION_BEGIN_TIMESTEP to ensure this."
 
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.4 to 0.65.
