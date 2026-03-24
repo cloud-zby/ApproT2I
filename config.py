@@ -50,6 +50,7 @@ class Config:
     # Number of self trajectory steps used before latent fusion.
     PRELIMINARY_STEPS = (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS) * SMALL_STEPS_TOTAL_INFERENCE_STEPS
     assert PRELIMINARY_STEPS.is_integer(), f"PRELIMINARY_STEPS should be an integer, but got {PRELIMINARY_STEPS}. Please adjust SMALL_STEPS_REAL_INFERENCE_STEPS or GENERATION_BEGIN_TIMESTEP to ensure this."
+    PRELIMINARY_STEPS = int(PRELIMINARY_STEPS)
 
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.4 to 0.65.
     OURS_MIX_SELF_WEIGHT_MIN = 0.4
@@ -65,34 +66,40 @@ class Config:
     GUIDANCE_SCALE = 7.5
 
     # Directory for full-trajectory images and latent trajectories.
-    TRAJ_ALL_SAVE_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images'
+    TRAJ_ALL_SAVE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
 
     # Directory for short-step images and latent trajectories.
-    SMALL_STEPS_IMAGE_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_images'
+    SMALL_STEPS_IMAGE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_images"
 
     # Directory for short-step attention matrices.
-    SMALL_STEPS_ATTN_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_attn'
+    SMALL_STEPS_ATTN_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_attn"
 
     # Output directory for ReDi generated images.
-    REDI_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/redi_generated'
+    REDI_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/redi_generated"
 
     # Output directory for MoDM generated images.
-    MODM_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated'
+    MODM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated"
 
     # Output directory for Ours generated images.
-    OURS_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated'
+    OURS_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated"
+
+    # Output directory for Ours(global norm) generated images.
+    OURS_GLOBAL_NORM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_global_norm"
 
     # Output directory for OursMix generated images.
-    OURS_MIX_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix'
+    OURS_MIX_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix"
+
+    # Output directory for OursMix(global norm) generated images.
+    OURS_MIX_GLOBAL_NORM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix_global_norm"
 
     # Output directory for Recon generated images.
-    RECON_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated'
+    RECON_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated"
 
     # Output directory for Nirvana generated images.
-    NIRVANA_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/nirvana_generated'
+    NIRVANA_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/nirvana_generated"
 
     # Directory for comparison outputs (excel/json summaries).
-    COMPARE_SAVE_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/comparison_results'
+    COMPARE_SAVE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/comparison_results"
 
     # Method names and generated-image directories used in compare.py.
     COMPARE_METHOD_DIRS = [
