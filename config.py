@@ -109,8 +109,8 @@ class Config:
         ('Recon', RECON_OUTPUT_DIR),
         ('Ours', OURS_OUTPUT_DIR),
         ('OursMix', OURS_MIX_OUTPUT_DIR),
-        # ('OursNew', OURS_OUTPUT_DIR + "_new"),
-        # ('OursNewMix', OURS_OUTPUT_DIR + "_new_mix"),
+        ('OursGlobalNorm', OURS_GLOBAL_NORM_OUTPUT_DIR),
+        ('OursMixGlobalNorm', OURS_MIX_GLOBAL_NORM_OUTPUT_DIR),
     ]
 
     @classmethod
