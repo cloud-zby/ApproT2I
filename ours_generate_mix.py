@@ -21,6 +21,8 @@ REUSE_INFO_PATH = Config.REUSE_INFO_PATH
 PRELIMINARY_STEPS = Config.PRELIMINARY_STEPS
 TOTAL_INFERENCE_STEPS = Config.GENERATION_TOTAL_INFERENCE_STEPS
 BEGIN_TIMESTEP = Config.GENERATION_BEGIN_TIMESTEP
+WEIGHT_MASK_SELF_MIN = Config.OURS_MIX_SELF_WEIGHT_MIN
+WEIGHT_MASK_SELF_MAX = Config.OURS_MIX_SELF_WEIGHT_MAX
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 pipe = SDPipeline.from_pretrained(Config.MODEL_CKPT_PATH, torch_dtype=DTYPE)
@@ -121,8 +123,8 @@ for i in progress_bar:
     token_mask_f32 = (token_mask_f32 - mean) / (std + 1e-8)
     minv = token_mask_f32.min()
     maxv = token_mask_f32.max()
-    token_mask_f32 = (token_mask_f32 - minv) / (maxv - minv + 1e-8) * 0.25 + 0.4
-    token_mask_f32 = torch.clamp(token_mask_f32, min=0.4, max=0.65)  # 0.4-0.65
+    token_mask_f32 = (token_mask_f32 - minv) / (maxv - minv + 1e-8) * (WEIGHT_MASK_SELF_MAX - WEIGHT_MASK_SELF_MIN) + WEIGHT_MASK_SELF_MIN
+    token_mask_f32 = torch.clamp(token_mask_f32, min=WEIGHT_MASK_SELF_MIN, max=WEIGHT_MASK_SELF_MAX)  # [WEIGHT_MASK_MIN, WEIGHT_MASK_MAX]范围内
     token_mask = token_mask_f32.to(self_latent.dtype)
     # 调整token_mask整体偏移量，使得>=0.5的占比在55%~60%之间（类似于二分搜索，以减少迭代次数）
     # def adjust_token_mask(mask, lower_ratio, upper_ratio, max_iter, shift):

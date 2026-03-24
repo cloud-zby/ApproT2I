@@ -19,6 +19,7 @@ REUSE_INFO_PATH = Config.REUSE_INFO_PATH
 PRELIMINARY_STEPS = Config.PRELIMINARY_STEPS
 TOTAL_INFERENCE_STEPS = Config.GENERATION_TOTAL_INFERENCE_STEPS
 BEGIN_TIMESTEP = Config.GENERATION_BEGIN_TIMESTEP
+OURS_SELF_WEIGHT = Config.OURS_SELF_WEIGHT
 
 pipe = SDPipeline.from_pretrained(Config.MODEL_CKPT_PATH, torch_dtype=DTYPE)
 pipe = pipe.to('cuda')
@@ -71,7 +72,7 @@ for i in progress_bar:
     self_latent_matched = ((self_stats - self_mean) / (self_std + eps)) * (begin_std + eps) + begin_mean
     self_latent_matched = self_latent_matched.to(dtype=DTYPE)
 
-    latent = self_latent_matched * 0.5 + begin_latent * 0.5
+    latent = self_latent_matched * OURS_SELF_WEIGHT + begin_latent * (1 - OURS_SELF_WEIGHT)
     # latent = self_latent_matched
     # latent = self_latent
     # latent = begin_latent
