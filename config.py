@@ -3,7 +3,7 @@ class Config:
     DATASET_NAME = 'coco'   # 'coco', 'pick-a-pic', or 'diffusiondb'
 
     # Pipeline class selector: SDXLPipeline or SD2Pipeline.
-    PIPELINE_CLASS_NAME = 'SDXLPipeline'
+    PIPELINE_CLASS_NAME = 'SD2Pipeline'
 
     # Model checkpoint paths for supported pipeline classes.
     MODEL_CKPT_PATHS = {
