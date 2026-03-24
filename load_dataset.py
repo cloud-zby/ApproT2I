@@ -4,6 +4,21 @@ import pandas as pd
 from config import Config
 
 
+def _resolve_existing_path(path):
+    candidates = [path]
+    dirname, basename = os.path.split(path)
+    if dirname:
+        candidates.append(os.path.join(dirname, 'ApproximateT2I-dataset', basename))
+
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+
+    raise FileNotFoundError(
+        f'Dataset file not found. Tried: {", ".join(candidates)}'
+    )
+
+
 def _normalize_uuid_prompt_df(df):
     if 'uuid' in df.columns and 'prompt' in df.columns:
         out = df[['uuid', 'prompt']].copy()
@@ -32,8 +47,7 @@ def _normalize_uuid_prompt_df(df):
 
 
 def load_coco_dataset(json_path='dataset/COCO2014_dataset.json'):
-    if not os.path.exists(json_path):
-        raise FileNotFoundError(f'COCO dataset file not found: {json_path}')
+    json_path = _resolve_existing_path(json_path)
 
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -67,8 +81,7 @@ def load_coco_dataset(json_path='dataset/COCO2014_dataset.json'):
 
 
 def load_diffusiondb_dataset(parquet_path='dataset/DiffusionDB_dataset.parquet'):
-    if not os.path.exists(parquet_path):
-        raise FileNotFoundError(f'DiffusionDB dataset file not found: {parquet_path}')
+    parquet_path = _resolve_existing_path(parquet_path)
 
     df = pd.read_parquet(parquet_path)
     df = _normalize_uuid_prompt_df(df)
@@ -77,8 +90,7 @@ def load_diffusiondb_dataset(parquet_path='dataset/DiffusionDB_dataset.parquet')
 
 
 def load_pickapic_dataset(parquet_path='dataset/PicaPic_dataset.parquet'):
-    if not os.path.exists(parquet_path):
-        raise FileNotFoundError(f'Pick-a-Pic dataset file not found: {parquet_path}')
+    parquet_path = _resolve_existing_path(parquet_path)
 
     df = pd.read_parquet(parquet_path)
     df = _normalize_uuid_prompt_df(df)

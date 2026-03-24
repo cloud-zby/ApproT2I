@@ -179,35 +179,20 @@ else
 	wait_all_jobs
 fi
 
-echo "===== Stage 5: nirvana/recon/redi/modm/ours/ours_mix ====="
+echo "===== Stage 5: ours_generate_mix.py only ====="
 if [ "$NUM_GPUS" -eq 2 ]; then
-	# GPU0 队列（串行：nirvana -> redi -> ours）
-	(
-		run_job_num_splits 0 ./nirvana_generate.py 4
-		run_job_num_splits 0 ./redi_generate.py 4
-		run_job_num_splits 0 ./ours_generate.py 4
-	) &
-	pid_gpu0=$!
-
-	# GPU1 队列（串行：recon -> modm -> ours_mix）
-	(
-		run_job_num_splits 1 ./recon_generate.py 4
-		run_job_num_splits 1 ./modm_generate.py 4
-		run_job_num_splits 1 ./ours_generate_mix.py 4
-	) &
-	pid_gpu1=$!
-
-	wait "$pid_gpu0"
-	wait "$pid_gpu1"
+	run_queue_split_step 0 ./ours_generate_mix.py 0 2 "$STEP" &
+	pid_q0=$!
+	run_queue_split_step 1 ./ours_generate_mix.py 1 3 "$STEP" &
+	pid_q1=$!
+	wait "$pid_q0"
+	wait "$pid_q1"
 else
-	# NUM_GPUS==4: distribute six commands across 4 GPUs in parallel
 	JOB_PIDS=()
-	cmds=("./nirvana_generate.py" "./recon_generate.py" "./redi_generate.py" "./modm_generate.py" "./ours_generate.py" "./ours_generate_mix.py")
-	for i in "${!cmds[@]}"; do
-		script="${cmds[$i]}"
-		gpu=$((i % NUM_GPUS))
-		launch_job_num_splits_no_wait "$gpu" "$script" 4
-	done
+	launch_job_split_step_no_wait 0 ./ours_generate_mix.py 0 "$STEP"
+	launch_job_split_step_no_wait 1 ./ours_generate_mix.py 1 "$STEP"
+	launch_job_split_step_no_wait 2 ./ours_generate_mix.py 2 "$STEP"
+	launch_job_split_step_no_wait 3 ./ours_generate_mix.py 3 "$STEP"
 	wait_all_jobs
 fi
 

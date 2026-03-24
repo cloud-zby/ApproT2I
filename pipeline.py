@@ -182,6 +182,8 @@ class SD2Pipeline(StableDiffusionPipeline):
         # 7. Denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
+            if only_start_steps is not None:
+                timesteps = [901, 850, 701, 601, 501, 401, 301, 201, 101, 1]
             for i, t in enumerate(timesteps):
                 if only_start_steps is not None and i >= only_start_steps:
                     break

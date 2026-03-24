@@ -13,9 +13,12 @@ SDPipeline = Config.get_pipeline_class()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_of_splits', type=int, default=1, help='Number of splits used in traj_*.pkl files')
+parser.add_argument('--split', type=int, default=None, help='Only process a single meta split when provided')
+parser.add_argument('--step', type=int, default=None, help='Unused compatibility flag for split-launch helpers')
 args = parser.parse_args()
 
 NUM_OF_SPLITS = args.num_of_splits
+SPLIT = args.split
 DTYPE = torch.float16
 REUSE_INFO_PATH = Config.REUSE_INFO_PATH
 PRELIMINARY_STEPS = Config.PRELIMINARY_STEPS
@@ -45,11 +48,22 @@ def pixel_mask_to_latent_tokens(pixel_mask: torch.Tensor, latent_shape: torch.Si
     return token_t[0, 0]
 
 
+def load_metas():
+    if SPLIT is not None:
+        with open(f'meta_{SPLIT}.pkl', 'rb') as f:
+            metas = pkl.load(f)
+        print(f"Processing split {SPLIT} only.")
+        return metas
+
+    metas = []
+    for split in range(NUM_OF_SPLITS):
+        with open(f'meta_{split}.pkl', 'rb') as f:
+            metas += pkl.load(f)
+    return metas
+
+
 # 加载待被复用的轨迹
-metas = []
-for split in range(NUM_OF_SPLITS):
-    meta = pkl.load(open(f'meta_{split}.pkl', 'rb'))
-    metas += meta
+metas = load_metas()
 num_requests = len(metas)
 print(f"Total {num_requests} images to generate.")
 
@@ -57,7 +71,8 @@ print(f"Total {num_requests} images to generate.")
 with open(REUSE_INFO_PATH, 'r') as f:
     reuse_infos = json.load(f)
 
-progress_bar = tqdm(range(num_requests), desc='Generating images')
+progress_desc = f'Generating split {SPLIT}' if SPLIT is not None else 'Generating images'
+progress_bar = tqdm(range(num_requests), desc=progress_desc)
 for i in progress_bar:
     torch.cuda.empty_cache()
     gc.collect()
@@ -169,5 +184,4 @@ for i in progress_bar:
     progress_bar.set_postfix_str(
         f"Similarity={prompt_similarity:.2f}"
     )
-
 

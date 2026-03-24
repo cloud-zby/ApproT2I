@@ -1,3 +1,6 @@
+import warnings
+
+
 class Config:
     # Dataset selector used by load_dataset().
     DATASET_NAME = 'coco'   # 'coco', 'pick-a-pic', or 'diffusiondb'
@@ -48,8 +51,27 @@ class Config:
     GENERATION_BEGIN_TIMESTEP = 15
 
     # Number of self trajectory steps used before latent fusion.
-    PRELIMINARY_STEPS = (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS) * SMALL_STEPS_REAL_INFERENCE_STEPS
-    assert PRELIMINARY_STEPS.is_integer(), f"PRELIMINARY_STEPS should be an integer, but got {PRELIMINARY_STEPS}. Please adjust SMALL_STEPS_REAL_INFERENCE_STEPS or GENERATION_BEGIN_TIMESTEP to ensure this."
+    # Align by the designed short-trajectory schedule length first; if that
+    # target step is beyond the actually executed prefix, clamp to the last
+    # available short-step latent to avoid downstream indexing errors.
+    PRELIMINARY_STEPS_FLOAT = (
+        (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS)
+        * SMALL_STEPS_TOTAL_INFERENCE_STEPS
+    )
+    PRELIMINARY_STEPS_TARGET = max(1, int(round(PRELIMINARY_STEPS_FLOAT)))
+    PRELIMINARY_STEPS = min(PRELIMINARY_STEPS_TARGET, SMALL_STEPS_REAL_INFERENCE_STEPS)
+    if abs(PRELIMINARY_STEPS_FLOAT - PRELIMINARY_STEPS_TARGET) > 1e-8:
+        warnings.warn(
+            "PRELIMINARY_STEPS target is not an integer for the current configuration. "
+            f"Using the nearest short-trajectory step: {PRELIMINARY_STEPS_TARGET} "
+            f"(from {PRELIMINARY_STEPS_FLOAT:.4f})."
+        )
+    if PRELIMINARY_STEPS_TARGET > SMALL_STEPS_REAL_INFERENCE_STEPS:
+        warnings.warn(
+            "PRELIMINARY_STEPS target exceeds the executed short-trajectory prefix. "
+            f"Clamping from {PRELIMINARY_STEPS_TARGET} to {PRELIMINARY_STEPS} because "
+            f"SMALL_STEPS_REAL_INFERENCE_STEPS={SMALL_STEPS_REAL_INFERENCE_STEPS}."
+        )
 
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.4 to 0.65.
     OURS_MIX_SELF_WEIGHT_MIN = 0.4
@@ -65,43 +87,43 @@ class Config:
     GUIDANCE_SCALE = 7.5
 
     # Directory for full-trajectory images and latent trajectories.
-    TRAJ_ALL_SAVE_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images'
+    TRAJ_ALL_SAVE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
 
     # Directory for short-step images and latent trajectories.
-    SMALL_STEPS_IMAGE_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_images'
+    SMALL_STEPS_IMAGE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_images"
 
     # Directory for short-step attention matrices.
-    SMALL_STEPS_ATTN_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_attn'
+    SMALL_STEPS_ATTN_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_attn"
 
     # Output directory for ReDi generated images.
-    REDI_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/redi_generated'
+    REDI_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/redi_generated"
 
     # Output directory for MoDM generated images.
-    MODM_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated'
+    MODM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated"
 
     # Output directory for Ours generated images.
-    OURS_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated'
+    OURS_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated"
 
     # Output directory for OursMix generated images.
-    OURS_MIX_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix'
+    OURS_MIX_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix"
 
     # Output directory for Recon generated images.
-    RECON_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated'
+    RECON_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated"
 
     # Output directory for Nirvana generated images.
-    NIRVANA_OUTPUT_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/nirvana_generated'
+    NIRVANA_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/nirvana_generated"
 
     # Directory for comparison outputs (excel/json summaries).
-    COMPARE_SAVE_DIR = f'{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/comparison_results'
+    COMPARE_SAVE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/comparison_results"
 
     # Method names and generated-image directories used in compare.py.
     COMPARE_METHOD_DIRS = [
-        ('Nirvana', NIRVANA_OUTPUT_DIR),
-        ('MoDM', MODM_OUTPUT_DIR),
-        ('ReDi', REDI_OUTPUT_DIR),
-        ('Recon', RECON_OUTPUT_DIR),
-        ('Ours', OURS_OUTPUT_DIR),
         ('OursMix', OURS_MIX_OUTPUT_DIR),
+        # ('Nirvana', NIRVANA_OUTPUT_DIR),
+        # ('MoDM', MODM_OUTPUT_DIR),
+        # ('ReDi', REDI_OUTPUT_DIR),
+        # ('Recon', RECON_OUTPUT_DIR),
+        # ('Ours', OURS_OUTPUT_DIR),
         # ('OursNew', OURS_OUTPUT_DIR + "_new"),
         # ('OursNewMix', OURS_OUTPUT_DIR + "_new_mix"),
     ]
