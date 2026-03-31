@@ -1,14 +1,19 @@
 class Config:
+    # Dataset file paths
+    COCO_JSON_PATH = 'dataset/COCO2014_dataset.json'
+    DIFFUSIONDB_PARQUET_PATH = 'dataset/DiffusionDB_dataset.parquet'
+    PICKAPIC_PARQUET_PATH = 'dataset/PicaPic_dataset.parquet'
+
     # Dataset selector used by load_dataset().
     DATASET_NAME = 'coco'   # 'coco', 'pick-a-pic', or 'diffusiondb'
 
-    # Pipeline class selector: SDXLPipeline or SD2Pipeline.
-    PIPELINE_CLASS_NAME = 'SD2Pipeline'
+    # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline'.
+    PIPELINE_CLASS_NAME = 'SD2.1Pipeline'
 
     # Model checkpoint paths for supported pipeline classes.
     MODEL_CKPT_PATHS = {
         'SDXLPipeline': './model_ckpt/stable-diffusion-xl-base-1.0',
-        'SD2Pipeline': './model_ckpt/stable-diffusion-2-1',
+        'SD2.1Pipeline': './model_ckpt/stable-diffusion-2-1',
     }
 
     # Unified model checkpoint path resolved from PIPELINE_CLASS_NAME.
@@ -36,10 +41,10 @@ class Config:
     TOP_K = 5
 
     # Reuse-info JSON path for image/prompt retrieval output and consumers.
-    REUSE_INFO_PATH = f'reuse_infos_{DISTANCE_METRIC}.json'
+    REUSE_INFO_PATH = f'generated_results/reuse_infos_{DISTANCE_METRIC}.json'
 
     # Reuse-info JSON path for prompt-only top-k retrieval output and consumers.
-    REUSE_INFO_BY_PROMPT_PATH = f'reuse_infos_{DISTANCE_METRIC}_by_prompt.json'
+    REUSE_INFO_BY_PROMPT_PATH = f'generated_results/reuse_infos_{DISTANCE_METRIC}_by_prompt.json'
 
     # Number of denoising steps for all reuse-based generation methods.
     GENERATION_TOTAL_INFERENCE_STEPS = 50
@@ -66,40 +71,40 @@ class Config:
     GUIDANCE_SCALE = 7.5
 
     # Directory for full-trajectory images and latent trajectories.
-    TRAJ_ALL_SAVE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
+    TRAJ_ALL_SAVE_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
 
     # Directory for short-step images and latent trajectories.
-    SMALL_STEPS_IMAGE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_images"
+    SMALL_STEPS_IMAGE_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_images"
 
     # Directory for short-step attention matrices.
-    SMALL_STEPS_ATTN_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_attn"
+    SMALL_STEPS_ATTN_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/small_steps_attn"
 
     # Output directory for ReDi generated images.
-    REDI_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/redi_generated"
+    REDI_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/redi_generated"
 
     # Output directory for MoDM generated images.
-    MODM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated"
+    MODM_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated"
 
     # Output directory for Ours generated images.
-    OURS_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated"
+    OURS_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated"
 
     # Output directory for Ours(global norm) generated images.
-    OURS_GLOBAL_NORM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_global_norm"
+    OURS_GLOBAL_NORM_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_global_norm"
 
     # Output directory for OursMix generated images.
-    OURS_MIX_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix"
+    OURS_MIX_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix"
 
     # Output directory for OursMix(global norm) generated images.
-    OURS_MIX_GLOBAL_NORM_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix_global_norm"
+    OURS_MIX_GLOBAL_NORM_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix_global_norm"
 
     # Output directory for Recon generated images.
-    RECON_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated"
+    RECON_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated"
 
     # Output directory for Nirvana generated images.
-    NIRVANA_OUTPUT_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/nirvana_generated"
+    NIRVANA_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/nirvana_generated"
 
     # Directory for comparison outputs (excel/json summaries).
-    COMPARE_SAVE_DIR = f"{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/comparison_results"
+    COMPARE_SAVE_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/comparison_results"
 
     # Method names and generated-image directories used in compare.py.
     COMPARE_METHOD_DIRS = [
@@ -119,7 +124,7 @@ class Config:
 
         pipeline_map = {
             'SDXLPipeline': SDXLPipeline,
-            'SD2Pipeline': SD2Pipeline,
+            'SD2.1Pipeline': SD2Pipeline,
         }
         if cls.PIPELINE_CLASS_NAME not in pipeline_map:
             raise ValueError(

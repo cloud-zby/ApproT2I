@@ -15,38 +15,38 @@ trusted-host =
     pypi.org
 EOF
 ```
-通过venv安装依赖
+通过uv安装依赖
 ```bash
-python3 -m venv .venv
+uv venv
 source .venv/bin/activate
 
-pip install diffusers == 0.37.0
-pip install modelscope
-pip install "setuptools < 75.0.0"
-pip install accelerate
-pip install faiss-cpu
-pip install torch torchvision
-pip install "transformers <= 4.50.0"
-pip install invisible_watermark
-pip install accelerate
-pip install safetensors
-pip install nvitop
-pip install scipy
-pip install matplotlib
-pip install scikit-image
-pip install git+https://github.com/openai/CLIP.git --no-build-isolation
-pip install pyarrow
-pip install pandas
-pip install openpyxl
+uv pip install "diffusers == 0.37.0"
+uv pip install modelscope
+uv pip install "setuptools < 75.0.0"
+uv pip install accelerate
+uv pip install faiss-cpu
+uv pip install torch torchvision
+uv pip install "transformers <= 4.50.0"
+uv pip install invisible_watermark
+uv pip install accelerate
+uv pip install safetensors
+uv pip install nvitop
+uv pip install scipy
+uv pip install matplotlib
+uv pip install scikit-image
+uv pip install git+https://github.com/openai/CLIP.git --no-build-isolation
+uv pip install pyarrow
+uv pip install pandas
+uv pip install openpyxl
 ```
 ## Data & Model Preparation
 ```bash
 # 下载数据，使得存在三个文件：dataset/COCO2014_dataset.json，dataset/DiffusionDB_dataset.parquet，dataset/PicaPic_dataset.parquet
-pip install huggingface_hub
-export HF_ENDPOINT=https://hf-mirror.com
-huggingface-cli download zbyzby/ApproximateCache --local-dir ./dataset --local-dir-use-symlinks False
+uv pip install huggingface_hub
+hf download zbyzby/ApproximateCache --local-dir ./dataset
 
 # 下载模型
+modelscope download --model AI-ModelScope/stable-diffusion-2-1 --local_dir ./model_ckpt/stable-diffusion-2-1
 modelscope download --model stabilityai/stable-diffusion-xl-base-1.0 --local_dir ./model_ckpt/stable-diffusion-xl-base-1.0
 modelscope download --model google/siglip2-giant-opt-patch16-384 --local_dir ./model_ckpt/siglip2-giant-opt-patch16-384
 ```

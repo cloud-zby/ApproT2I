@@ -1,0 +1,15 @@
+*.log
+*.VSCodeCounter
+model_ckpt
+dataset
+.venv
+**/__pycache__
+__pycache__
+*.pkl
+*.json
+generated_results
+
+
+
+
+

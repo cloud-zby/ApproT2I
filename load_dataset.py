@@ -31,7 +31,7 @@ def _normalize_uuid_prompt_df(df):
     return out
 
 
-def load_coco_dataset(json_path='dataset/COCO2014_dataset.json'):
+def load_coco_dataset(json_path=Config.COCO_JSON_PATH):
     if not os.path.exists(json_path):
         raise FileNotFoundError(f'COCO dataset file not found: {json_path}')
 
@@ -66,7 +66,7 @@ def load_coco_dataset(json_path='dataset/COCO2014_dataset.json'):
     return df
 
 
-def load_diffusiondb_dataset(parquet_path='dataset/DiffusionDB_dataset.parquet'):
+def load_diffusiondb_dataset(parquet_path=Config.DIFFUSIONDB_PARQUET_PATH):
     if not os.path.exists(parquet_path):
         raise FileNotFoundError(f'DiffusionDB dataset file not found: {parquet_path}')
 
@@ -76,7 +76,7 @@ def load_diffusiondb_dataset(parquet_path='dataset/DiffusionDB_dataset.parquet')
     return df
 
 
-def load_pickapic_dataset(parquet_path='dataset/PicaPic_dataset.parquet'):
+def load_pickapic_dataset(parquet_path=Config.PICKAPIC_PARQUET_PATH):
     if not os.path.exists(parquet_path):
         raise FileNotFoundError(f'Pick-a-Pic dataset file not found: {parquet_path}')
 
@@ -88,9 +88,9 @@ def load_pickapic_dataset(parquet_path='dataset/PicaPic_dataset.parquet'):
 
 def load_dataset(
     dataset_name=Config.DATASET_NAME,
-    coco_json_path='dataset/COCO2014_dataset.json',
-    diffusiondb_parquet_path='dataset/DiffusionDB_dataset.parquet',
-    pickapic_parquet_path='dataset/PicaPic_dataset.parquet',
+    coco_json_path=Config.COCO_JSON_PATH,
+    diffusiondb_parquet_path=Config.DIFFUSIONDB_PARQUET_PATH,
+    pickapic_parquet_path=Config.PICKAPIC_PARQUET_PATH,
 ):
     dataset_key = str(dataset_name).strip().lower().replace('_', '-').replace(' ', '-')
 
