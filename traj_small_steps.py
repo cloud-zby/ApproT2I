@@ -16,9 +16,6 @@ from config import Config
 
 SDPipeline = Config.get_pipeline_class()
 
-TOTAL_INFERENCE_STEPS = Config.SMALL_STEPS_TOTAL_INFERENCE_STEPS
-REAL_INFERENCE_STEPS = Config.SMALL_STEPS_REAL_INFERENCE_STEPS
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--split', type=int, default=0, help='数据分片编号')
 parser.add_argument('--step', type=int, default=1000, help='每个分片的样本数')
@@ -47,7 +44,14 @@ def gen_traj(meta, pipe, save_dir=Config.SMALL_STEPS_IMAGE_DIR):
         traj.append(latents.cpu().numpy())
 
     traj = []
-    images = pipe(prompt, callback_steps=1, callback=lambda step, timestep, latents: collect_latents(step, timestep, latents, traj), guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS, only_start_steps=REAL_INFERENCE_STEPS).images
+    images = pipe(
+        prompt, 
+        callback_steps=1, 
+        callback=lambda step, timestep, latents: collect_latents(step, timestep, latents, traj), 
+        guidance_scale=Config.GUIDANCE_SCALE, 
+        generator=generator, 
+        early_steps_timesteps=Config.TIMESTEPS_FOR_SMALL_STEPS,
+    ).images
 
     os.makedirs(save_dir, exist_ok=True)
     images[0].save(image_path)

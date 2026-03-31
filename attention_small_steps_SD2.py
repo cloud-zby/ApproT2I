@@ -11,23 +11,14 @@ import torch
 import argparse
 from config import Config
 
-def run_attention_small_steps_sd2():
+def run_attention_small_steps_sd2(SPLIT, STEP):
 
     if Config.PIPELINE_CLASS_NAME != 'SD2Pipeline':
         raise ValueError(
             f"attention_small_steps_SD2.py requires PIPELINE_CLASS_NAME='SD2Pipeline', got {Config.PIPELINE_CLASS_NAME}"
         )
 
-    TOTAL_INFERENCE_STEPS = Config.SMALL_STEPS_TOTAL_INFERENCE_STEPS
-    REAL_INFERENCE_STEPS = Config.SMALL_STEPS_REAL_INFERENCE_STEPS
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--split', type=int, default=0, help='数据分片编号')
-    parser.add_argument('--step', type=int, default=1000, help='每个分片的样本数')
-    args = parser.parse_args()
-    split = args.split
-    STEP = args.step
-    devices = f"cuda:{split % torch.cuda.device_count()}" if torch.cuda.is_available() else "cpu"
+    devices = f"cuda:{SPLIT % torch.cuda.device_count()}" if torch.cuda.is_available() else "cpu"
 
     pipe = SD2Pipeline.from_pretrained(Config.MODEL_CKPT_PATHS['SD2Pipeline'], torch_dtype=torch.float16)
     pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
@@ -193,8 +184,7 @@ def run_attention_small_steps_sd2():
             prompt,
             guidance_scale=Config.GUIDANCE_SCALE,
             generator=generator,
-            num_inference_steps=TOTAL_INFERENCE_STEPS,
-            only_start_steps=REAL_INFERENCE_STEPS,
+            early_steps_timesteps=Config.TIMESTEPS_FOR_SMALL_STEPS,
         ).images
 
         os.makedirs(image_dir, exist_ok=True)
@@ -220,19 +210,19 @@ def run_attention_small_steps_sd2():
 
         return
 
-    # 加载DiffusionDB数据集
+    # 加载数据集
     df_unique = load_dataset(dataset_name=Config.DATASET_NAME)
     ids = df_unique.index.tolist()
 
     random.seed(Config.DATA_SHUFFLE_SEED)
     random.shuffle(ids)
 
-    print(f'split = {split}')
+    print(f'split = {SPLIT}')
     metainfo = []
     pipe.set_progress_bar_config(disable=True)
-    print(f'interval = {STEP * split}, {STEP * (split + 1)}')
+    print(f'interval = {STEP * SPLIT}, {STEP * (SPLIT + 1)}')
     with torch.no_grad():
-        for idx in tqdm.tqdm(ids[STEP * split: STEP * (split + 1)], desc=f'Generating split {split}'):
+        for idx in tqdm.tqdm(ids[STEP * SPLIT: STEP * (SPLIT + 1)], desc=f'Generating split {SPLIT}'):
             meta = df_unique.loc[idx]
             meta_dict = meta.to_dict()
             gen_attention_masks(
@@ -243,4 +233,4 @@ def run_attention_small_steps_sd2():
             )
             metainfo.append(meta_dict)
 
-    print(f"Generated {len(metainfo)} images in split {split}.")
+    print(f"Generated {len(metainfo)} images in split {SPLIT}.")

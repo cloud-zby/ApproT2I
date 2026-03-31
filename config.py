@@ -7,13 +7,14 @@ class Config:
     # Dataset selector used by load_dataset().
     DATASET_NAME = 'coco'   # 'coco', 'pick-a-pic', or 'diffusiondb'
 
-    # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline'.
-    PIPELINE_CLASS_NAME = 'SD2.1Pipeline'
+    # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline' or 'FLUX2KleinPipeline'.
+    PIPELINE_CLASS_NAME = 'FLUX2KleinPipeline'
 
     # Model checkpoint paths for supported pipeline classes.
     MODEL_CKPT_PATHS = {
         'SDXLPipeline': './model_ckpt/stable-diffusion-xl-base-1.0',
         'SD2.1Pipeline': './model_ckpt/stable-diffusion-2-1',
+        'FLUX2KleinPipeline': './model_ckpt/FLUX.2-klein-base-9B',
     }
 
     # Unified model checkpoint path resolved from PIPELINE_CLASS_NAME.
@@ -68,7 +69,32 @@ class Config:
     GENERATOR_SEED = 1024
 
     # Classifier-free guidance scale used in every generation call.
-    GUIDANCE_SCALE = 7.5
+    GUIDANCE_SCALES = {
+        'SD2.1Pipeline': 7.5,
+        'SDXLPipeline': 7.5,
+        'FLUX2KleinPipeline': 4.0,
+    }
+    GUIDANCE_SCALE = GUIDANCE_SCALES[PIPELINE_CLASS_NAME]
+
+    # Timesteps for capturing small-step trajectories and attention maps. These should correspond to the timesteps used in attention_small_steps_*.py scripts. Suggested to cover the early denoising steps where retrieval-based intervention is most effective.
+    """
+    FLUX
+    [1000.0000,  997.3091,  994.5214,  991.6316,  988.6340,  985.5225,
+        982.2905,  978.9307,  975.4355,  971.7964,  968.0046,  964.0501,
+        959.9222,  955.6093,  951.0987,  946.3763,  941.4270,  936.2340,
+        930.7789,  925.0412,  918.9985,  912.6257,  905.8951,  898.7756,
+        891.2326,  883.2271,  874.7151,  865.6472,  855.9669,  845.6102,
+        834.5034,  822.5620,  809.6884,  795.7689,  780.6708,  764.2374,
+        746.2838,  726.5886,  704.8854,  680.8509,  654.0879,  624.1038,
+        590.2800,  551.8284,  507.7296,  456.6408,  396.7571,  325.5933,
+        239.6312,  133.7189]
+    """
+    TIMESTEPS_FOR_SMALL_STEPS_DICT = {
+        'SD2.1Pipeline': [901, 801, 701, 601, 501],
+        'SDXLPipeline': [901, 801, 701, 601, 501],
+        'FLUX2KleinPipeline': [901, 801, 701, 601, 501],
+    }
+    TIMESTEPS_FOR_SMALL_STEPS = TIMESTEPS_FOR_SMALL_STEPS_DICT[PIPELINE_CLASS_NAME]
 
     # Directory for full-trajectory images and latent trajectories.
     TRAJ_ALL_SAVE_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
@@ -120,11 +146,12 @@ class Config:
 
     @classmethod
     def get_pipeline_class(cls):
-        from pipeline import SD2Pipeline, SDXLPipeline
+        from pipeline import SD2Pipeline, SDXLPipeline, FLUX2Pipeline
 
         pipeline_map = {
             'SDXLPipeline': SDXLPipeline,
             'SD2.1Pipeline': SD2Pipeline,
+            'FLUX2KleinPipeline': FLUX2Pipeline,
         }
         if cls.PIPELINE_CLASS_NAME not in pipeline_map:
             raise ValueError(

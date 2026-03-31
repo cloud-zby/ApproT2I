@@ -26,7 +26,7 @@ uv pip install "setuptools < 75.0.0"
 uv pip install accelerate
 uv pip install faiss-cpu
 uv pip install torch torchvision
-uv pip install "transformers <= 4.50.0"
+uv pip install "transformers <= 5.4.0"
 uv pip install invisible_watermark
 uv pip install accelerate
 uv pip install safetensors
@@ -48,6 +48,7 @@ hf download zbyzby/ApproximateCache --local-dir ./dataset
 # 下载模型
 modelscope download --model AI-ModelScope/stable-diffusion-2-1 --local_dir ./model_ckpt/stable-diffusion-2-1
 modelscope download --model stabilityai/stable-diffusion-xl-base-1.0 --local_dir ./model_ckpt/stable-diffusion-xl-base-1.0
+modelscope download --model black-forest-labs/FLUX.2-klein-base-9B --local_dir ./model_ckpt/FLUX.2-klein-base-9B
 modelscope download --model google/siglip2-giant-opt-patch16-384 --local_dir ./model_ckpt/siglip2-giant-opt-patch16-384
 ```
 ## Running
