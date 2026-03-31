@@ -45,7 +45,7 @@ def gen_traj(meta, pipe, save_dir=Config.SMALL_STEPS_IMAGE_DIR):
 
     traj = []
     images = pipe(
-        prompt, 
+        prompt=prompt, 
         callback_steps=1, 
         callback=lambda step, timestep, latents: collect_latents(step, timestep, latents, traj), 
         guidance_scale=Config.GUIDANCE_SCALE, 

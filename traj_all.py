@@ -27,7 +27,8 @@ pipe = SDPipeline.from_pretrained(
     torch_dtype=torch.float16,
 )
 pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
-pipe = pipe.to(devices)
+# pipe = pipe.to(devices)
+pipe.enable_model_cpu_offload()
 
 def gen_traj(meta, pipe, save_dir=Config.TRAJ_ALL_SAVE_DIR):
     prompt = meta['prompt']
@@ -44,7 +45,7 @@ def gen_traj(meta, pipe, save_dir=Config.TRAJ_ALL_SAVE_DIR):
         traj.append(latents.cpu().numpy())
 
     traj = []
-    images = pipe(prompt, callback_steps=1, callback=lambda step, timestep, latents: collect_latents(step, timestep, latents, traj), guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images
+    images = pipe(prompt=prompt, callback_steps=1, callback=lambda step, timestep, latents: collect_latents(step, timestep, latents, traj), guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images
 
     os.makedirs(save_dir, exist_ok=True)
     images[0].save(image_path)

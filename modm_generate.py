@@ -64,7 +64,7 @@ for i in progress_bar:
     
     # 生成
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
-    img = pipe(prompt, head_start_latents=latent, head_start_step=BEGIN_TIMESTEP, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]
+    img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=BEGIN_TIMESTEP, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]
     os.makedirs(Config.MODM_OUTPUT_DIR, exist_ok=True)
     img.save(output_path)
 
