@@ -35,7 +35,7 @@ class SD2Pipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         callback_steps: Optional[int] = 1,
         verbose: Optional[bool] = False,
-        early_steps_timesteps: Optional[List[int] | None] = None,
+        early_steps_timesteps: Optional[List[int] | None | torch.Tensor] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -170,7 +170,14 @@ class SD2Pipeline(StableDiffusionPipeline):
                     print(
                         f"Using custom {len({early_steps_timesteps})}-steps early_steps_timesteps ({early_steps_timesteps}) instaed of {len(timesteps)}-steps scheduler timesteps ({timesteps})"
                     )
-                timesteps = early_steps_timesteps
+                if isinstance(early_steps_timesteps, list):
+                    timesteps = torch.tensor(early_steps_timesteps).to(timesteps.device).to(timesteps.dtype)
+                elif isinstance(early_steps_timesteps, torch.Tensor):
+                    timesteps = early_steps_timesteps.to(timesteps.device).to(timesteps.dtype)
+                else:
+                    raise ValueError(
+                        f"`early_steps_timesteps` must be a list or a torch.Tensor, but got {type(early_steps_timesteps)}"
+                    )
             
             for i, t in enumerate(timesteps):
                 # print((i, t))
@@ -324,7 +331,7 @@ class SDXLPipeline(StableDiffusionXLPipeline):
         prompt1_steps: Optional[int] = None,
         head_start_latents: Optional[Union[torch.FloatTensor, list]] = None,
         head_start_step: Optional[int] = None,
-        early_steps_timesteps: Optional[List[int] | None] = None,
+        early_steps_timesteps: Optional[List[int] | None | torch.Tensor] = None,
         prompt_2: str | list[str] | None = None,
         height: int | None = None,
         width: int | None = None,
@@ -712,7 +719,14 @@ class SDXLPipeline(StableDiffusionXLPipeline):
                     print(
                         f"Using custom {len({early_steps_timesteps})}-steps early_steps_timesteps ({early_steps_timesteps}) instaed of {len(timesteps)}-steps scheduler timesteps ({timesteps})"
                     )
-                timesteps = early_steps_timesteps
+                if isinstance(early_steps_timesteps, list):
+                    timesteps = torch.tensor(early_steps_timesteps).to(timesteps.device).to(timesteps.dtype)
+                elif isinstance(early_steps_timesteps, torch.Tensor):
+                    timesteps = early_steps_timesteps.to(timesteps.device).to(timesteps.dtype)
+                else:
+                    raise ValueError(
+                        f"`early_steps_timesteps` must be a list or a torch.Tensor, but got {type(early_steps_timesteps)}"
+                    )
                 
             for i, t in enumerate(timesteps):
 
@@ -922,8 +936,8 @@ class FLUX2Pipeline(Flux2KleinPipeline):
     @torch.no_grad()
     def __call__(
         self,
-        image: list[PIL.Image.Image] | PIL.Image.Image | None = None,
         prompt: str | list[str] = None,
+        image: list[PIL.Image.Image] | PIL.Image.Image | None = None,
         height: int | None = 1024,
         width: int | None = 1024,
         num_inference_steps: int = 50,
@@ -943,7 +957,7 @@ class FLUX2Pipeline(Flux2KleinPipeline):
         text_encoder_out_layers: tuple[int] = (9, 18, 27),
         head_start_latents: Optional[Union[torch.FloatTensor, list]] = None,
         head_start_step: Optional[int] = None,
-        early_steps_timesteps: Optional[List[int] | None] = None,
+        early_steps_timesteps: Optional[List[float] | None | torch.Tensor] = None,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         callback_steps: Optional[int] = 1,
         verbose: bool = False,
@@ -1150,7 +1164,14 @@ class FLUX2Pipeline(Flux2KleinPipeline):
                     print(
                         f"Using custom {len({early_steps_timesteps})}-steps early_steps_timesteps ({early_steps_timesteps}) instaed of {len(timesteps)}-steps scheduler timesteps ({timesteps})"
                     )
-                timesteps = early_steps_timesteps
+                if isinstance(early_steps_timesteps, list):
+                    timesteps = torch.tensor(early_steps_timesteps).to(timesteps.device).to(timesteps.dtype)
+                elif isinstance(early_steps_timesteps, torch.Tensor):
+                    timesteps = early_steps_timesteps.to(timesteps.device).to(timesteps.dtype)
+                else:
+                    raise ValueError(
+                        f"`early_steps_timesteps` must be a list or a torch.Tensor, but got {type(early_steps_timesteps)}"
+                    )
 
             for i, t in enumerate(timesteps):
                 if (

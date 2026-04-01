@@ -26,12 +26,6 @@ class Config:
     # Number of denoising steps for full trajectory generation.
     TRAJ_ALL_TOTAL_INFERENCE_STEPS = 50
 
-    # Number of denoising steps when running short-step trajectories/attention capture.
-    SMALL_STEPS_TOTAL_INFERENCE_STEPS = 10
-
-    # Effective early steps to run in short-step mode.
-    SMALL_STEPS_REAL_INFERENCE_STEPS = 5
-
     # Seed used in retrieval pipelines.
     RETRIEVE_SEED = 42
 
@@ -42,10 +36,10 @@ class Config:
     TOP_K = 5
 
     # Reuse-info JSON path for image/prompt retrieval output and consumers.
-    REUSE_INFO_PATH = f'generated_results/reuse_infos_{DISTANCE_METRIC}.json'
+    REUSE_INFO_PATH = f'generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}.json'
 
     # Reuse-info JSON path for prompt-only top-k retrieval output and consumers.
-    REUSE_INFO_BY_PROMPT_PATH = f'generated_results/reuse_infos_{DISTANCE_METRIC}_by_prompt.json'
+    REUSE_INFO_BY_PROMPT_PATH = f'generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}_by_prompt.json'
 
     # Number of denoising steps for all reuse-based generation methods.
     GENERATION_TOTAL_INFERENCE_STEPS = 50
@@ -54,9 +48,7 @@ class Config:
     GENERATION_BEGIN_TIMESTEP = 15
 
     # Number of self trajectory steps used before latent fusion.
-    PRELIMINARY_STEPS = (GENERATION_BEGIN_TIMESTEP / GENERATION_TOTAL_INFERENCE_STEPS) * SMALL_STEPS_TOTAL_INFERENCE_STEPS
-    assert PRELIMINARY_STEPS.is_integer(), f"PRELIMINARY_STEPS should be an integer, but got {PRELIMINARY_STEPS}. Please adjust SMALL_STEPS_REAL_INFERENCE_STEPS or GENERATION_BEGIN_TIMESTEP to ensure this."
-    PRELIMINARY_STEPS = int(PRELIMINARY_STEPS)
+    PRELIMINARY_STEPS = 3
 
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.4 to 0.65.
     OURS_MIX_SELF_WEIGHT_MIN = 0.4
@@ -78,21 +70,35 @@ class Config:
 
     # Timesteps for capturing small-step trajectories and attention maps. These should correspond to the timesteps used in attention_small_steps_*.py scripts. Suggested to cover the early denoising steps where retrieval-based intervention is most effective.
     """
+    SD2.1
+    [979, 959, 939, 919, 899, 
+    879, 859, 839, 819, 799, 
+    779, 759, 739, 719, 699, 
+    679, 659, 639, 619, 599, 
+    579, 559, 539, 519, 499, 
+    479, 459, 439, 419, 399, 
+    379, 359, 339, 319, 299, 
+    279, 259, 239, 219, 199, 
+    179, 159, 139, 119, 99, 
+    79, 59, 39, 19, 0]
+    SDXL
     FLUX
-    [1000.0000,  997.3091,  994.5214,  991.6316,  988.6340,  985.5225,
-        982.2905,  978.9307,  975.4355,  971.7964,  968.0046,  964.0501,
-        959.9222,  955.6093,  951.0987,  946.3763,  941.4270,  936.2340,
-        930.7789,  925.0412,  918.9985,  912.6257,  905.8951,  898.7756,
-        891.2326,  883.2271,  874.7151,  865.6472,  855.9669,  845.6102,
-        834.5034,  822.5620,  809.6884,  795.7689,  780.6708,  764.2374,
-        746.2838,  726.5886,  704.8854,  680.8509,  654.0879,  624.1038,
-        590.2800,  551.8284,  507.7296,  456.6408,  396.7571,  325.5933,
-        239.6312,  133.7189]
+    [1000.0000,  997.3091,  994.5214,  991.6316,  988.6340,  
+    985.5225,  982.2905,  978.9307,  975.4355,  971.7964,  
+    968.0046,  964.0501,  959.9222,  955.6093,  951.0987,  
+    946.3763,  941.4270,  936.2340,  930.7789,  925.0412,  
+    918.9985,  912.6257,  905.8951,  898.7756,  891.2326,  
+    883.2271,  874.7151,  865.6472,  855.9669,  845.6102,
+    834.5034,  822.5620,  809.6884,  795.7689,  780.6708,  
+    764.2374,  746.2838,  726.5886,  704.8854,  680.8509,  
+    654.0879,  624.1038,  590.2800,  551.8284,  507.7296,  
+    456.6408,  396.7571,  325.5933,  239.6312,  133.7189]
     """
     TIMESTEPS_FOR_SMALL_STEPS_DICT = {
         'SD2.1Pipeline': [901, 801, 701, 601, 501],
         'SDXLPipeline': [901, 801, 701, 601, 501],
-        'FLUX2KleinPipeline': [901, 801, 701, 601, 501],
+        # 'FLUX2KleinPipeline': [1000.0000, 985.5225, 968.0046, 946.3763, 918.9985],
+        'FLUX2KleinPipeline': [1000.0000, 990.7759, 980.7245, 969.7292, 957.6505, 944.3200, 929.5326, 909.5043, 890.5331, 869.0489],
     }
     TIMESTEPS_FOR_SMALL_STEPS = TIMESTEPS_FOR_SMALL_STEPS_DICT[PIPELINE_CLASS_NAME]
 

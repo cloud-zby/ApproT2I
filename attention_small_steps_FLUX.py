@@ -21,14 +21,12 @@ def run_attention_small_steps_flux(SPLIT, STEP):
             f"attention_small_steps_flux.py requires PIPELINE_CLASS_NAME='FLUX2KleinPipeline', got {Config.PIPELINE_CLASS_NAME}"
         )
 
-    TOTAL_INFERENCE_STEPS = Config.SMALL_STEPS_TOTAL_INFERENCE_STEPS
-    REAL_INFERENCE_STEPS = Config.SMALL_STEPS_REAL_INFERENCE_STEPS
-
     devices = f"cuda:{SPLIT % torch.cuda.device_count()}" if torch.cuda.is_available() else "cpu"
 
     pipe = FLUX2Pipeline.from_pretrained(Config.MODEL_CKPT_PATHS["FLUX2KleinPipeline"], torch_dtype=torch.bfloat16)
     pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
-    pipe = pipe.to(devices)
+    # pipe = pipe.to(devices)
+    pipe.enable_model_cpu_offload()
 
     cross_attention_query_scores = defaultdict(list)
 
@@ -229,7 +227,7 @@ def run_attention_small_steps_flux(SPLIT, STEP):
         early_steps_timesteps = Config.TIMESTEPS_FOR_SMALL_STEPS
 
         images = pipe(
-            prompt,
+            prompt=prompt,
             guidance_scale=Config.GUIDANCE_SCALE,
             generator=generator,
             num_inference_steps=TOTAL_INFERENCE_STEPS,
@@ -295,6 +293,5 @@ def run_attention_small_steps_flux(SPLIT, STEP):
                 attn_dir=Config.SMALL_STEPS_ATTN_DIR,
             )
             metainfo.append(meta_dict)
-            # TODO：实现代码，将每一步的注意力分数，可视化到生成的图像上，并保存下来。
 
     print(f"Generated {len(metainfo)} images in split {SPLIT}.")

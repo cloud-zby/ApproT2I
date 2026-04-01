@@ -181,7 +181,7 @@ def run_attention_small_steps_sd2(SPLIT, STEP):
 
         cross_attention_query_scores.clear()
         images = pipe(
-            prompt,
+            prompt=prompt,
             guidance_scale=Config.GUIDANCE_SCALE,
             generator=generator,
             early_steps_timesteps=Config.TIMESTEPS_FOR_SMALL_STEPS,

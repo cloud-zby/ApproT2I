@@ -27,7 +27,8 @@ devices = f"cuda:{split % torch.cuda.device_count()}" if torch.cuda.is_available
 
 pipe = SDPipeline.from_pretrained(Config.MODEL_CKPT_PATH, torch_dtype=torch.float16)
 pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
-pipe = pipe.to(devices)
+# pipe = pipe.to(devices)
+pipe.enable_model_cpu_offload()
 
 def gen_traj(meta, pipe, save_dir=Config.SMALL_STEPS_IMAGE_DIR):
     prompt = meta['prompt']
