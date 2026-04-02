@@ -47,24 +47,6 @@ class Config:
     # Start timestep for reuse-based generation methods.
     GENERATION_BEGIN_TIMESTEP = 15
 
-    # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.4 to 0.65.
-    OURS_MIX_SELF_WEIGHT_MIN = 0.4
-    OURS_MIX_SELF_WEIGHT_MAX = 0.65
-
-    # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory.
-    OURS_SELF_WEIGHT = 0.5
-
-    # Seed for torch.Generator in every pipeline sampling call.
-    GENERATOR_SEED = 1024
-
-    # Classifier-free guidance scale used in every generation call.
-    GUIDANCE_SCALES = {
-        'SD2.1Pipeline': 7.5,
-        'SDXLPipeline': 7.5,
-        'FLUX2KleinPipeline': 4.0,
-    }
-    GUIDANCE_SCALE = GUIDANCE_SCALES[PIPELINE_CLASS_NAME]
-
     # Timesteps for capturing small-step trajectories and attention maps. These should correspond to the timesteps used in attention_small_steps_*.py scripts. Suggested to cover the early denoising steps where retrieval-based intervention is most effective.
     """
     SD2.1
@@ -101,6 +83,24 @@ class Config:
 
     # Number of self trajectory steps used before latent fusion.
     PRELIMINARY_STEPS = 4
+
+    # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory.
+    OURS_SELF_WEIGHT = 0.5
+
+    # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.46 to 0.68.
+    OURS_MIX_SELF_WEIGHT_MIN = 0.46
+    OURS_MIX_SELF_WEIGHT_MAX = 0.68
+
+    # Seed for torch.Generator in every pipeline sampling call.
+    GENERATOR_SEED = 1024
+
+    # Classifier-free guidance scale used in every generation call.
+    GUIDANCE_SCALES = {
+        'SD2.1Pipeline': 7.5,
+        'SDXLPipeline': 7.5,
+        'FLUX2KleinPipeline': 4.0,
+    }
+    GUIDANCE_SCALE = GUIDANCE_SCALES[PIPELINE_CLASS_NAME]
 
     # Directory for full-trajectory images and latent trajectories.
     TRAJ_ALL_SAVE_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
