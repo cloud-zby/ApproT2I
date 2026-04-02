@@ -14,7 +14,7 @@ from PIL import Image
 from diffusers.models.transformers.transformer_flux2 import _get_qkv_projections, apply_rotary_emb
 from diffusers.models.attention_dispatch import dispatch_attention_fn
 
-VISUALIZE_ATTN_HEATMAP = True
+VISUALIZE_ATTN_HEATMAP = False
 
 def run_attention_small_steps_flux(SPLIT, STEP):
 
