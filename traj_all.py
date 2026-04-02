@@ -25,8 +25,8 @@ pipe = SDPipeline.from_pretrained(
     torch_dtype=torch.float16,
 )
 pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
-# pipe = pipe.to(devices)
-pipe.enable_model_cpu_offload()
+pipe = pipe.to(devices)
+# pipe.enable_model_cpu_offload()
 
 def gen_traj(meta, pipe, save_dir=Config.TRAJ_ALL_SAVE_DIR):
     prompt = meta['prompt']
