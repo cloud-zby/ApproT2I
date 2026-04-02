@@ -21,7 +21,8 @@ TOTAL_INFERENCE_STEPS = Config.GENERATION_TOTAL_INFERENCE_STEPS
 BEGIN_TIMESTEP = Config.GENERATION_BEGIN_TIMESTEP
 
 pipe = SDPipeline.from_pretrained(Config.MODEL_CKPT_PATH, torch_dtype=torch.float16)
-pipe = pipe.to('cuda')
+# pipe = pipe.to('cuda')
+pipe.enable_model_cpu_offload()
 pipe.set_progress_bar_config(disable=True)
 
 # 加载待被复用的轨迹
