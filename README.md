@@ -17,32 +17,38 @@ EOF
 ```
 通过uv安装依赖
 ```bash
-uv venv
+python -m venv .venv
 source .venv/bin/activate
 
-uv pip install "diffusers == 0.37.0"
-uv pip install modelscope
-uv pip install "setuptools < 75.0.0"
-uv pip install accelerate
-uv pip install faiss-cpu
-uv pip install torch torchvision
-uv pip install "transformers <= 5.4.0"
-uv pip install invisible_watermark
-uv pip install accelerate
-uv pip install safetensors
-uv pip install nvitop
-uv pip install scipy
-uv pip install matplotlib
-uv pip install scikit-image
-uv pip install git+https://github.com/openai/CLIP.git --no-build-isolation
-uv pip install pyarrow
-uv pip install pandas
-uv pip install openpyxl
+apt update
+apt install -y libgl1
+apt install -y libgl1-mesa-glx
+
+pip install "diffusers == 0.37.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install modelscope -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install "setuptools < 75.0.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install accelerate -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install faiss-cpu -i https://pypi.tuna.tsinghua.edu.cn/simple
+# pip install torch torchvision -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu126
+pip install mkl -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install "transformers <= 5.4.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install invisible_watermark -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install accelerate -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install safetensors -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install nvitop -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install scipy -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install matplotlib -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install scikit-image -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install git+https://github.com/openai/CLIP.git --no-build-isolation
+pip install pyarrow -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install pandas -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install openpyxl -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 ## Data & Model Preparation
 ```bash
 # 下载数据，使得存在三个文件：dataset/COCO2014_dataset.json，dataset/DiffusionDB_dataset.parquet，dataset/PicaPic_dataset.parquet
-uv pip install huggingface_hub
+pip install huggingface_hub -i https://pypi.tuna.tsinghua.edu.cn/simple
 hf download zbyzby/ApproximateCache --local-dir ./dataset
 
 # 下载模型
