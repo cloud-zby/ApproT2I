@@ -1252,6 +1252,73 @@ class FLUX2Pipeline(Flux2KleinPipeline):
                     assert head_start_latents is not None, "head_start_latents must be provided if head_start_step is set"
                     assert isinstance(head_start_latents, torch.Tensor), f"head_start_latents must be a torch.Tensor, but got {type(head_start_latents)}"
                     assert head_start_latents.shape == latents.shape, f"head_start_latents shape {head_start_latents.shape} must match latents shape {latents.shape}"
+                    if self.interrupt:
+                        continue
+
+                    self._current_timestep = t
+                    # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
+                    timestep = t.expand(latents.shape[0]).to(latents.dtype)
+
+                    latent_model_input = latents.to(self.transformer.dtype)
+                    latent_image_ids = latent_ids
+
+                    if image_latents is not None:
+                        latent_model_input = torch.cat([latents, image_latents], dim=1).to(self.transformer.dtype)
+                        latent_image_ids = torch.cat([latent_ids, image_latent_ids], dim=1)
+
+                    with self.transformer.cache_context("cond"):
+                        noise_pred = self.transformer(
+                            hidden_states=latent_model_input,  # (B, image_seq_len, C)
+                            timestep=timestep / 1000,
+                            guidance=None,
+                            encoder_hidden_states=prompt_embeds,
+                            txt_ids=text_ids,  # B, text_seq_len, 4
+                            img_ids=latent_image_ids,  # B, image_seq_len, 4
+                            joint_attention_kwargs=self.attention_kwargs,
+                            return_dict=False,
+                        )[0]
+
+                    noise_pred = noise_pred[:, : latents.size(1) :]
+
+                    if self.do_classifier_free_guidance:
+                        with self.transformer.cache_context("uncond"):
+                            neg_noise_pred = self.transformer(
+                                hidden_states=latent_model_input,
+                                timestep=timestep / 1000,
+                                guidance=None,
+                                encoder_hidden_states=negative_prompt_embeds,
+                                txt_ids=negative_text_ids,
+                                img_ids=latent_image_ids,
+                                joint_attention_kwargs=self._attention_kwargs,
+                                return_dict=False,
+                            )[0]
+                        neg_noise_pred = neg_noise_pred[:, : latents.size(1) :]
+                        noise_pred = neg_noise_pred + guidance_scale * (noise_pred - neg_noise_pred)
+
+                    # compute the previous noisy sample x_t -> x_t-1
+                    latents_dtype = latents.dtype
+                    latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+
+                    if latents.dtype != latents_dtype:
+                        if torch.backends.mps.is_available():
+                            # some platforms (eg. apple mps) misbehave due to a pytorch bug: https://github.com/pytorch/pytorch/pull/99272
+                            latents = latents.to(latents_dtype)
+
+                    if callback_on_step_end is not None:
+                        callback_kwargs = {}
+                        for k in callback_on_step_end_tensor_inputs:
+                            callback_kwargs[k] = locals()[k]
+                        callback_outputs = callback_on_step_end(self, i, t, callback_kwargs)
+
+                        latents = callback_outputs.pop("latents", latents)
+                        prompt_embeds = callback_outputs.pop("prompt_embeds", prompt_embeds)
+
+                    # call the callback, if provided
+                    if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
+                        progress_bar.update()
+
+                    if XLA_AVAILABLE:
+                        xm.mark_step()
                     latents = head_start_latents.to(latents.device).to(latents.dtype)
                 
                 # call the callback, if provided
