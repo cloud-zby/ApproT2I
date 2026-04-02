@@ -14,6 +14,8 @@ from PIL import Image
 from diffusers.models.transformers.transformer_flux2 import _get_qkv_projections, apply_rotary_emb
 from diffusers.models.attention_dispatch import dispatch_attention_fn
 
+VISUALIZE_ATTN_HEATMAP = True
+
 def run_attention_small_steps_flux(SPLIT, STEP):
 
     if Config.PIPELINE_CLASS_NAME != 'FLUX2KleinPipeline':
@@ -25,8 +27,8 @@ def run_attention_small_steps_flux(SPLIT, STEP):
 
     pipe = FLUX2Pipeline.from_pretrained(Config.MODEL_CKPT_PATHS["FLUX2KleinPipeline"], torch_dtype=torch.bfloat16)
     pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
-    # pipe = pipe.to(devices)
-    pipe.enable_model_cpu_offload()
+    pipe = pipe.to(devices)
+    # pipe.enable_model_cpu_offload()
 
     cross_attention_query_scores = defaultdict(list)
 
@@ -170,33 +172,26 @@ def run_attention_small_steps_flux(SPLIT, STEP):
         return pixel_map.to(dtype=torch.float32)
 
 
-    def save_step_attention_overlays(
-        image: Image.Image,
+    def save_step_attention_heatmaps(
         step_avg_matrices: list[np.ndarray],
         output_dir: str,
         base_name: str,
-        alpha: float = 0.5,
     ) -> None:
         if len(step_avg_matrices) == 0:
             return
 
         os.makedirs(output_dir, exist_ok=True)
-        image_rgb = image.convert("RGB")
-        image_arr = np.asarray(image_rgb, dtype=np.float32)
 
         for step_idx, step_mask in enumerate(step_avg_matrices):
             if step_mask.ndim != 2:
                 continue
             mask = np.clip(step_mask, 0.0, 1.0)
-            heatmap = np.zeros_like(image_arr)
+            heatmap = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.float32)
             heatmap[..., 0] = mask * 255.0
 
-            overlay = image_arr * (1.0 - alpha) + heatmap * alpha
-            overlay = np.clip(overlay, 0.0, 255.0).astype(np.uint8)
-
-            overlay_img = Image.fromarray(overlay)
-            overlay_path = os.path.join(output_dir, f"{base_name}_attn_step_{step_idx:03d}.png")
-            overlay_img.save(overlay_path)
+            heatmap_img = Image.fromarray(np.clip(heatmap, 0.0, 255.0).astype(np.uint8))
+            heatmap_path = os.path.join(output_dir, f"{base_name}_attn_step_{step_idx:03d}.png")
+            heatmap_img.save(heatmap_path)
 
 
     cross_attn_proc_names = find_flux_cross_attn_processor_names(pipe.transformer)
@@ -230,7 +225,7 @@ def run_attention_small_steps_flux(SPLIT, STEP):
             prompt=prompt,
             guidance_scale=Config.GUIDANCE_SCALE,
             generator=generator,
-            num_inference_steps=TOTAL_INFERENCE_STEPS,
+            num_inference_steps=10,
             early_steps_timesteps=early_steps_timesteps,
         ).images
 
@@ -265,8 +260,9 @@ def run_attention_small_steps_flux(SPLIT, STEP):
         with open(attn_path, "wb") as f:
             pickle.dump(step_avg_matrices, f)
 
-        overlay_dir = os.path.join(attn_dir, "overlays")
-        save_step_attention_overlays(images[0], step_avg_matrices, overlay_dir, meta["uuid"])
+        if VISUALIZE_ATTN_HEATMAP:
+            heatmap_dir = os.path.join(attn_dir, "heatmaps")
+            save_step_attention_heatmaps(step_avg_matrices, heatmap_dir, meta["uuid"])
 
         return
 

@@ -47,9 +47,6 @@ class Config:
     # Start timestep for reuse-based generation methods.
     GENERATION_BEGIN_TIMESTEP = 15
 
-    # Number of self trajectory steps used before latent fusion.
-    PRELIMINARY_STEPS = 3
-
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.4 to 0.65.
     OURS_MIX_SELF_WEIGHT_MIN = 0.4
     OURS_MIX_SELF_WEIGHT_MAX = 0.65
@@ -98,10 +95,12 @@ class Config:
     TIMESTEPS_FOR_SMALL_STEPS_DICT = {
         'SD2.1Pipeline': [901, 801, 701, 601, 501],
         'SDXLPipeline': [901, 801, 701, 601, 501],
-        # 'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187,  803.6000,  704.7356,  514.7510],
-        'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187],
+        'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187,  803.6000,  704.7356,  514.7510],
     }
     TIMESTEPS_FOR_SMALL_STEPS = TIMESTEPS_FOR_SMALL_STEPS_DICT[PIPELINE_CLASS_NAME]
+
+    # Number of self trajectory steps used before latent fusion.
+    PRELIMINARY_STEPS = 4
 
     # Directory for full-trajectory images and latent trajectories.
     TRAJ_ALL_SAVE_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/org_images"
