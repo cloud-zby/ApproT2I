@@ -29,7 +29,6 @@ pip install modelscope -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install "setuptools < 75.0.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install accelerate -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install faiss-cpu -i https://pypi.tuna.tsinghua.edu.cn/simple
-# pip install torch torchvision -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 --index-url https://download.pytorch.org/whl/cu126
 pip install mkl -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install "transformers <= 5.4.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -180,6 +179,6 @@ sudo killall -u zby
 shareAI@2025
 # Copy to H200
 ```bash
-rsync -avzP --ignore-existing --exclude='.git' --exclude='__pycache__'  --exclude='.venv' -e "ssh -p 30022"  /home/zbyzby/ApproT2I   zby@root@ssh-502.default@218.84.152.122://gemini/platform/public/ai_infra/zby/
+rsync -avzP --ignore-existing --exclude='.git' --exclude='__pycache__'  --exclude='.venv' --exclude='model_ckpt'  --exclude='dataset'  --exclude='.log' --exclude='.pkl' --exclude='.json'  /gemini-1/platform/public/zby/ApproximateT2I  zby@root@ssh-502.default@218.84.152.122://gemini/platform/public/ai_infra/zby/
 ```
 
