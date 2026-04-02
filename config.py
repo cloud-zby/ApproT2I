@@ -36,10 +36,10 @@ class Config:
     TOP_K = 5
 
     # Reuse-info JSON path for image/prompt retrieval output and consumers.
-    REUSE_INFO_PATH = f'generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}.json'
+    REUSE_INFO_PATH = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}.json"
 
     # Reuse-info JSON path for prompt-only top-k retrieval output and consumers.
-    REUSE_INFO_BY_PROMPT_PATH = f'generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}_by_prompt.json'
+    REUSE_INFO_BY_PROMPT_PATH = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}_by_prompt.json"
 
     # Number of denoising steps for all reuse-based generation methods.
     GENERATION_TOTAL_INFERENCE_STEPS = 50
@@ -82,6 +82,7 @@ class Config:
     179, 159, 139, 119, 99, 
     79, 59, 39, 19, 0]
     SDXL
+    
     FLUX
     [1000.0000,  997.3091,  994.5214,  991.6316,  988.6340,  
     985.5225,  982.2905,  978.9307,  975.4355,  971.7964,  
@@ -97,8 +98,8 @@ class Config:
     TIMESTEPS_FOR_SMALL_STEPS_DICT = {
         'SD2.1Pipeline': [901, 801, 701, 601, 501],
         'SDXLPipeline': [901, 801, 701, 601, 501],
-        # 'FLUX2KleinPipeline': [1000.0000, 985.5225, 968.0046, 946.3763, 918.9985],
-        'FLUX2KleinPipeline': [1000.0000, 990.7759, 980.7245, 969.7292, 957.6505, 944.3200, 929.5326, 909.5043, 890.5331, 869.0489],
+        # 'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187,  803.6000,  704.7356,  514.7510],
+        'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187],
     }
     TIMESTEPS_FOR_SMALL_STEPS = TIMESTEPS_FOR_SMALL_STEPS_DICT[PIPELINE_CLASS_NAME]
 
