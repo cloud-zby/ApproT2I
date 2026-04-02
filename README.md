@@ -142,19 +142,15 @@ cat modm.log
 
 # 10. 本方法生成图像（latent粒度进行融合）
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=0 python ./ours_generate.py --num_of_splits 4
-CUDA_VISIBLE_DEVICES=1 python ./ours_generate_new.py --num_of_splits 4
 CUDA_VISIBLE_DEVICES=0 nohup python ./ours_generate.py --num_of_splits 4 > ours.log 2>&1 &
-CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_new.py --num_of_splits 4 > ours_new.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_global_norm.py --num_of_splits 4 > ours_global_norm.log 2>&1 &
 ps aux | grep '[o]urs_generate.py'
 cat ours.log
 
 # 11. 本方法生成图像（token粒度根据交叉注意力分数进行融合）
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=0 python ./ours_generate_mix.py --num_of_splits 4
-CUDA_VISIBLE_DEVICES=1 python ./ours_generate_mix_new.py --num_of_splits 4
-CUDA_VISIBLE_DEVICES=0 nohup python ./ours_generate_mix.py --num_of_splits 4 > ours_mix.log 2>&1 &
-CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_mix_new.py --num_of_splits 4 > ours_mix_new.log 2>&1 &
+CUDA_VISIBLE_DEVICES=2 nohup python ./ours_generate_mix.py --num_of_splits 4 > ours_mix.log 2>&1 &
+CUDA_VISIBLE_DEVICES=3 nohup python ./ours_generate_mix_global_norm.py --num_of_splits 4 > ours_generate_mix_global_norm.log 2>&1 &
 ps aux | grep '[o]urs_generate_mix.py'
 cat ours_mix.log
 
