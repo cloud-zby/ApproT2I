@@ -80,7 +80,6 @@ for i in progress_bar:
         # 只有一个候选或多个候选相似度相同，退化为等权
         norm_weights = np.ones_like(similarities, dtype=np.float32)
 
-    norm_weights = norm_weights * 0.4 + 0.6
     # 归一化权重和为1
     weight_sum = float(norm_weights.sum())
     if weight_sum <= 0:
@@ -111,7 +110,7 @@ for i in progress_bar:
     if weighted_latent is None:
         print(f"Skipping image_id={sample_id} as weighted latent is empty.")
         continue
-    begin_latent = weighted_latent
+    begin_latent = weighted_latent + torch.randn_like(weighted_latent).to(weighted_latent.dtype).to(weighted_latent.device) * Config.RECON_ADD_NOISE_SCALE
     
     latent = begin_latent
 
