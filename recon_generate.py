@@ -81,6 +81,7 @@ for i in progress_bar:
         norm_weights = np.ones_like(similarities, dtype=np.float32)
 
     # 归一化权重和为1
+    norm_weights = 0.6 * norm_weights + 0.4
     weight_sum = float(norm_weights.sum())
     if weight_sum <= 0:
         weights = np.ones_like(norm_weights, dtype=np.float32) / float(len(norm_weights))
@@ -110,9 +111,8 @@ for i in progress_bar:
     if weighted_latent is None:
         print(f"Skipping image_id={sample_id} as weighted latent is empty.")
         continue
-    begin_latent = weighted_latent + torch.randn_like(weighted_latent).to(weighted_latent.dtype).to(weighted_latent.device) * Config.RECON_ADD_NOISE_SCALE
     
-    latent = begin_latent
+    latent = weighted_latent + torch.randn_like(weighted_latent).to(weighted_latent.dtype).to(weighted_latent.device) * Config.ADD_NOISE_SCALE
 
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
     img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=begin_timestep, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]
