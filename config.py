@@ -33,7 +33,10 @@ class Config:
     DISTANCE_METRIC = 'cosine'.lower()
 
     # Top-k candidates used in prompt-based retrieval and recon fusion.
-    TOP_K = 5
+    TOP_K = 3
+
+    # Noise scale added to the weighted latent in Recon method to enhance diversity in ReCon. Suggested range: 0.0 (no noise) to 0.1 (strong noise).
+    RECON_ADD_NOISE_SCALE = 0.05
 
     # Reuse-info JSON path for image/prompt retrieval output and consumers.
     REUSE_INFO_PATH = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}.json"

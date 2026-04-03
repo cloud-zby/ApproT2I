@@ -113,29 +113,24 @@ CUDA_VISIBLE_DEVICES=0 python ./retrieve_by_prompt.py --num_of_splits 4
 
 # 6. NIRVANA生成图像
 source .venv/bin/activate
-export CUDA_VISIBLE_DEVICES=0
-CUDA_VISIBLE_DEVICES=0 python ./nirvana_generate.py --num_of_splits 4
 CUDA_VISIBLE_DEVICES=0 nohup python ./nirvana_generate.py --num_of_splits 4 > nirvana.log 2>&1 &
 ps aux | grep '[n]irvana_generate.py'
 cat nirvana.log
 
 # 7. ReCon生成图像
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=0 python ./recon_generate.py --num_of_splits 4
 CUDA_VISIBLE_DEVICES=1 nohup python ./recon_generate.py --num_of_splits 4 > recon.log 2>&1 &
 ps aux | grep '[r]econ_generate.py'
 cat recon.log
 
 # 8. ReDi生成图像
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=0 python ./redi_generate.py --num_of_splits 4
 CUDA_VISIBLE_DEVICES=2 nohup python ./redi_generate.py --num_of_splits 4 > redi.log 2>&1 &
 ps aux | grep '[r]edi_generate.py'
 cat redi.log
 
 # 9. MoDM生成图像
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=0 python ./modm_generate.py --num_of_splits 4
 CUDA_VISIBLE_DEVICES=3 nohup python ./modm_generate.py --num_of_splits 4 > modm.log 2>&1 &
 ps aux | grep '[m]odm_generate.py'
 cat modm.log

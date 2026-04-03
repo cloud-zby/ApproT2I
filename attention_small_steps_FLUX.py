@@ -14,7 +14,7 @@ from PIL import Image
 from diffusers.models.transformers.transformer_flux2 import _get_qkv_projections, apply_rotary_emb
 from diffusers.models.attention_dispatch import dispatch_attention_fn
 
-VISUALIZE_ATTN_HEATMAP = False
+VISUALIZE_ATTN_HEATMAP = True
 
 def run_attention_small_steps_flux(SPLIT, STEP):
 
@@ -126,35 +126,49 @@ def run_attention_small_steps_flux(SPLIT, STEP):
         return cross_attn_processor_names
 
 
-    def infer_query_hw(query_dim: int, image_h: int, image_w: int) -> tuple[int, int]:
-        side = int(round(math.sqrt(query_dim)))
-        if side * side == query_dim:
-            return side, side
+    def get_flux_token_hw_from_image(
+        image_h: int,
+        image_w: int,
+        vae_scale_factor: int,
+        patch_size: int = 2,
+    ) -> tuple[int, int]:
+        token_downsample = vae_scale_factor * patch_size
+        if image_h % token_downsample != 0 or image_w % token_downsample != 0:
+            raise ValueError(
+                f"Image size {(image_h, image_w)} must be divisible by {token_downsample} "
+                f"(vae_scale_factor={vae_scale_factor}, patch_size={patch_size})."
+            )
 
-        target_ratio = image_h / max(image_w, 1)
-        best_h, best_w = 1, query_dim
-        best_err = float("inf")
-        max_factor = int(math.sqrt(query_dim))
-        for h in range(1, max_factor + 1):
-            if query_dim % h != 0:
-                continue
-            w = query_dim // h
-            ratio_err = abs((h / w) - target_ratio)
-            if ratio_err < best_err:
-                best_err = ratio_err
-                best_h, best_w = h, w
-        return best_h, best_w
+        token_h = image_h // token_downsample
+        token_w = image_w // token_downsample
+        return token_h, token_w
 
 
     def query_scores_to_pixel_matrix(
         query_scores: torch.Tensor,
         image_h: int,
         image_w: int,
+        vae_scale_factor: int,
+        patch_size: int = 2,
     ) -> torch.Tensor:
         query_scores = query_scores.to(dtype=torch.float32)
         query_dim = int(query_scores.shape[0])
-        q_h, q_w = infer_query_hw(query_dim, image_h, image_w)
-        query_map = query_scores.reshape(q_h, q_w)
+
+        token_h, token_w = get_flux_token_hw_from_image(
+            image_h=image_h,
+            image_w=image_w,
+            vae_scale_factor=vae_scale_factor,
+            patch_size=patch_size,
+        )
+        expected_query_dim = token_h * token_w
+        if query_dim != expected_query_dim:
+            raise ValueError(
+                f"Token count mismatch: got query_dim={query_dim}, expected {expected_query_dim} "
+                f"from image size {(image_h, image_w)} and downsample={vae_scale_factor * patch_size}."
+            )
+
+        # Align with FLUX packed latent order: row-major flatten over (token_h, token_w).
+        query_map = query_scores.reshape(token_h, token_w)
 
         query_map_t = query_map[None, None, :, :]
         pixel_map = torch.nn.functional.interpolate(
@@ -237,7 +251,9 @@ def run_attention_small_steps_flux(SPLIT, STEP):
         step_avg_matrices = []
         if len(cross_attention_query_scores) > 0:
             expected_steps = (
-                len(early_steps_timesteps) if early_steps_timesteps is not None else TOTAL_INFERENCE_STEPS
+                len(early_steps_timesteps)
+                if early_steps_timesteps is not None
+                else Config.GENERATION_TOTAL_INFERENCE_STEPS
             )
             cleaned_scores = {}
             for name, step_query_scores in cross_attention_query_scores.items():
@@ -251,7 +267,13 @@ def run_attention_small_steps_flux(SPLIT, STEP):
                 step_pixel_masks = []
                 for step_query_scores in cleaned_scores.values():
                     if step_idx < len(step_query_scores):
-                        pixel_mask = query_scores_to_pixel_matrix(step_query_scores[step_idx], image_h, image_w)
+                        pixel_mask = query_scores_to_pixel_matrix(
+                            step_query_scores[step_idx],
+                            image_h,
+                            image_w,
+                            vae_scale_factor=pipe.vae_scale_factor,
+                            patch_size=2,
+                        )
                         step_pixel_masks.append(pixel_mask)
                 if len(step_pixel_masks) > 0:
                     step_avg = torch.mean(torch.stack(step_pixel_masks, dim=0), dim=0)
