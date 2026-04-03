@@ -81,7 +81,7 @@ for i in progress_bar:
         norm_weights = np.ones_like(similarities, dtype=np.float32)
 
     # 归一化权重和为1
-    norm_weights = 0.6 * norm_weights + 0.4
+    norm_weights = Config.RECON_NORM_WEIGHT * norm_weights + (1 - Config.RECON_NORM_WEIGHT)
     weight_sum = float(norm_weights.sum())
     if weight_sum <= 0:
         weights = np.ones_like(norm_weights, dtype=np.float32) / float(len(norm_weights))
