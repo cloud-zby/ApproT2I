@@ -21,8 +21,11 @@ TOTAL_INFERENCE_STEPS = Config.GENERATION_TOTAL_INFERENCE_STEPS
 BEGIN_TIMESTEP = Config.GENERATION_BEGIN_TIMESTEP
 
 pipe = SDPipeline.from_pretrained(Config.MODEL_CKPT_PATH, torch_dtype=torch.float16)
-# pipe = pipe.to('cuda')
-pipe.enable_model_cpu_offload()
+if Config.PIPELINE_CLASS_NAME == 'FLUX2KleinPipeline':
+    print("Using FLUX.2-klein-base-9B with model CPU offload to reduce GPU memory usage in MoDM.")
+    pipe.enable_model_cpu_offload()
+else:
+    pipe = pipe.to('cuda')
 pipe.set_progress_bar_config(disable=True)
 
 # 加载待被复用的轨迹
