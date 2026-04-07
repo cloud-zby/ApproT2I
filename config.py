@@ -35,11 +35,11 @@ class Config:
     # Top-k candidates used in prompt-based retrieval and recon fusion.
     TOP_K = 3
 
-    # Weight for similarity-based normalization in Recon method. The final weight is computed as: norm_weight = RECON_NORM_WEIGHT * (similarity / max_similarity) + (1 - RECON_NORM_WEIGHT). Suggested range: 0.5 to 0.6, where higher values give more emphasis to similarity differences and lower values lead to more uniform weights among candidates.
+    # Weight for similarity-based normalization in Recon method. The final weight is computed as: norm_weight = RECON_NORM_WEIGHT * (similarity / max_similarity) + (1 - RECON_NORM_WEIGHT). Suggested range: 0.4 to 0.6, where higher values give more emphasis to similarity differences and lower values lead to more uniform weights among candidates.
     RECON_NORM_WEIGHT = 0.4
 
-    # Noise scale added to the weighted latent in Recon/ReDi/NIRVANA method to enhance diversity in ReCon. Suggested range: 0.0 (no noise) to 0.1 (strong noise).
-    ADD_NOISE_SCALE = 0.07
+    # Noise scale added to the weighted latent in Recon/ReDi/NIRVANA method to enhance diversity in ReCon. Suggested range: 0.0 (no noise) to 0.2 (strong noise).
+    ADD_NOISE_SCALE = 0.10
 
     # Reuse-info JSON path for image/prompt retrieval output and consumers.
     REUSE_INFO_PATH = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}.json"
