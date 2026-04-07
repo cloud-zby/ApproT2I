@@ -239,7 +239,7 @@ def run_attention_small_steps_flux(SPLIT, STEP):
             prompt=prompt,
             guidance_scale=Config.GUIDANCE_SCALE,
             generator=generator,
-            num_inference_steps=10,
+            num_inference_steps=Config.SMALL_STEPS_INFERENCE_STEPS_FLUX,
             early_steps_timesteps=early_steps_timesteps,
         ).images
 

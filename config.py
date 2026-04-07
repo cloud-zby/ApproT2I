@@ -96,6 +96,9 @@ class Config:
     }
     TIMESTEPS_FOR_SMALL_STEPS = TIMESTEPS_FOR_SMALL_STEPS_DICT[PIPELINE_CLASS_NAME]
 
+    # Number of denoising steps for small-step trajectory generation in FLUX. It shoud be according to TIMESTEPS_FOR_SMALL_STEPS_DICT for FLUX2KleinPipeline. For SD2.1 and SDXL pipelines, we don't need to set.
+    SMALL_STEPS_INFERENCE_STEPS_FLUX = 10
+
     # Number of self trajectory steps used before latent fusion.
     PRELIMINARY_STEPS = 4
 

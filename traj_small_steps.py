@@ -16,6 +16,13 @@ from config import Config
 
 SDPipeline = Config.get_pipeline_class()
 
+if Config.PIPELINE_CLASS_NAME != "FLUX2KleinPipeline":
+    SMALL_STEPS_INFERENCE_STEPS_FLUX = Config.SMALL_STEPS_INFERENCE_STEPS_FLUX
+elif Config.PIPELINE_CLASS_NAME == "SD2.1Pipeline" or Config.PIPELINE_CLASS_NAME == "SDXLPipeline":
+    SMALL_STEPS_INFERENCE_STEPS_FLUX = None
+else:
+    raise ValueError(f"Unsupported PIPELINE_CLASS_NAME={Config.PIPELINE_CLASS_NAME} for SMALL_STEPS_INFERENCE_STEPS_FLUX setting.")
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--split', type=int, default=0, help='数据分片编号')
 parser.add_argument('--step', type=int, default=1000, help='每个分片的样本数')
@@ -52,7 +59,7 @@ def gen_traj(meta, pipe, save_dir=Config.SMALL_STEPS_IMAGE_DIR):
         guidance_scale=Config.GUIDANCE_SCALE, 
         generator=generator, 
         early_steps_timesteps=Config.TIMESTEPS_FOR_SMALL_STEPS,
-        num_inference_steps=10,
+        num_inference_steps=SMALL_STEPS_INFERENCE_STEPS_FLUX,
     ).images
 
     os.makedirs(save_dir, exist_ok=True)
