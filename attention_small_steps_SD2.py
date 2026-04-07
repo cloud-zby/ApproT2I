@@ -13,14 +13,14 @@ from config import Config
 
 def run_attention_small_steps_sd2(SPLIT, STEP):
 
-    if Config.PIPELINE_CLASS_NAME != 'SD2Pipeline':
+    if Config.PIPELINE_CLASS_NAME != 'SD2.1Pipeline':
         raise ValueError(
-            f"attention_small_steps_SD2.py requires PIPELINE_CLASS_NAME='SD2Pipeline', got {Config.PIPELINE_CLASS_NAME}"
+            f"attention_small_steps_SD2.py requires PIPELINE_CLASS_NAME='SD2.1Pipeline', got {Config.PIPELINE_CLASS_NAME}"
         )
 
     devices = f"cuda:{SPLIT % torch.cuda.device_count()}" if torch.cuda.is_available() else "cpu"
 
-    pipe = SD2Pipeline.from_pretrained(Config.MODEL_CKPT_PATHS['SD2Pipeline'], torch_dtype=torch.float16)
+    pipe = SD2Pipeline.from_pretrained(Config.MODEL_CKPT_PATHS['SD2.1Pipeline'], torch_dtype=torch.float16)
     pipe.safety_checker = lambda images, **kwargs: (images, [False] * len(images))
     pipe = pipe.to(devices)
 
