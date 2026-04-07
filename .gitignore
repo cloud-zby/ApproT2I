@@ -1,16 +1,18 @@
 *.log
 *.VSCodeCounter
 model_ckpt
-dataset
 .venv
 **/__pycache__
 __pycache__
 *.pkl
 *.json
+*.parquet
 generated_results
 temp*
 tmp*
-
+!dataset/PicaPic_dataset.parquet
+!dataset/DiffusionDB_dataset.parquet
+!dataset/COCO2014_dataset.json
 
 
 

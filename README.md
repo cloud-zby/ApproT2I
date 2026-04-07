@@ -1,20 +1,5 @@
 # Approximate Cache for Text-to-Image Diffusion Models
 ## Installation
-改变Pip镜像
-```bash
-mkdir -p ~/.pip
-cat > ~/.pip/pip.conf <<EOF
-[global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple
-extra-index-url =
-    https://mirrors.aliyun.com/pypi/simple/
-    https://pypi.org/simple
-trusted-host =
-    pypi.tuna.tsinghua.edu.cn
-    mirrors.aliyun.com
-    pypi.org
-EOF
-```
 通过uv安装依赖
 ```bash
 python -m venv .venv
@@ -23,6 +8,11 @@ source .venv/bin/activate
 apt update
 apt install -y libgl1
 apt install -y libgl1-mesa-glx
+apt-get update
+apt-get install -y curl gnupg ca-certificates
+curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
+apt-get install -y git-lfs
+git lfs install
 
 pip install "diffusers == 0.37.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install modelscope -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -49,6 +39,8 @@ pip install openpyxl -i https://pypi.tuna.tsinghua.edu.cn/simple
 # 下载数据，使得存在三个文件：dataset/COCO2014_dataset.json，dataset/DiffusionDB_dataset.parquet，dataset/PicaPic_dataset.parquet
 pip install huggingface_hub -i https://pypi.tuna.tsinghua.edu.cn/simple
 hf download zbyzby/ApproximateCache --local-dir ./dataset
+# 或者使用GIT LFS拉取
+git lfs pull
 
 # 下载模型
 modelscope download --model AI-ModelScope/stable-diffusion-2-1 --local_dir ./model_ckpt/stable-diffusion-2-1
