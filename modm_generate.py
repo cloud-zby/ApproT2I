@@ -8,6 +8,7 @@ from torchvision import transforms
 import argparse
 import gc
 from config import Config
+import glob
 
 SDPipeline = Config.get_pipeline_class()
 
@@ -40,6 +41,49 @@ num_requests = len(metas)
 with open(REUSE_INFO_PATH, 'r') as f:
     reuse_infos = json.load(f)
 
+def compute_org_latent_stats(org_dir: str, step: int) -> tuple[float, float]:
+    latent_files = sorted(glob.glob(os.path.join(org_dir, "*.pkl")))
+    if len(latent_files) == 0:
+        raise FileNotFoundError(f"No pkl files found under `{org_dir}`")
+
+    target_idx = step - 1
+    mean_sum = 0.0
+    var_sum = 0.0
+    valid_cnt = 0
+
+    stats_bar = tqdm(latent_files, desc=f"Computing step-{step} latent stats")
+    for latent_path in stats_bar:
+        with open(latent_path, "rb") as f:
+            traj = pkl.load(f)
+        if len(traj) <= target_idx:
+            continue
+
+        latent = torch.tensor(traj[target_idx], dtype=torch.float32)
+        mean_sum += latent.mean().item()
+        var_sum += latent.var(unbiased=False).item()
+        valid_cnt += 1
+
+        stats_bar.set_postfix_str(f"valid={valid_cnt}")
+
+    if valid_cnt == 0:
+        raise ValueError(
+            f"No valid trajectories contain step={step}. Please check {org_dir}/*.pkl lengths."
+        )
+
+    avg_mean = mean_sum / valid_cnt
+    avg_var = var_sum / valid_cnt
+    avg_std = avg_var ** 0.5
+    print(
+        f"Computed from {valid_cnt} files at step={step}: "
+        f"avg_mean={avg_mean:.6f}, avg_var={avg_var:.6f}, avg_std={avg_std:.6f}"
+    )
+    return avg_mean, avg_std
+
+target_mean, target_std = compute_org_latent_stats(
+        org_dir=Config.TRAJ_ALL_SAVE_DIR,
+        step=Config.GENERATION_BEGIN_TIMESTEP,
+)
+
 progress_bar = tqdm(range(num_requests), desc='Generating images')
 for i in progress_bar:
     torch.cuda.empty_cache()
@@ -65,6 +109,13 @@ for i in progress_bar:
         total_inference_steps=TOTAL_INFERENCE_STEPS,
         generator=generator,
     )
+    # 将latent分布修正为target_mean, target_std
+    latent_dtype = latent.dtype
+    latent = latent.float()
+    latent_mean = latent.mean().item()
+    latent_std = latent.std().item()
+    latent = (latent - latent_mean) / (latent_std + 1e-6) * target_std + target_mean
+    latent = latent.to(dtype=latent_dtype)
     
     # 生成
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)

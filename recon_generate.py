@@ -112,7 +112,9 @@ for i in progress_bar:
         print(f"Skipping image_id={sample_id} as weighted latent is empty.")
         continue
     
-    latent = weighted_latent + torch.randn_like(weighted_latent).to(weighted_latent.dtype).to(weighted_latent.device) * Config.ADD_NOISE_SCALE
+    mask = torch.rand_like(weighted_latent) < Config.ADD_NOISE_SCALE
+    latent = weighted_latent.clone()
+    latent[mask] = torch.randn_like(weighted_latent)[mask].to(weighted_latent.dtype).to(weighted_latent.device)
 
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
     img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=begin_timestep, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]

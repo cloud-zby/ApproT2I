@@ -52,7 +52,11 @@ for i in progress_bar:
         reuse_traj = pkl.load(f)
     begin_latent = torch.tensor(reuse_traj[BEGIN_TIMESTEP - 1], dtype=torch.float16).cuda()
     
-    latent = begin_latent + torch.randn_like(begin_latent).to(begin_latent.dtype).to(begin_latent.device) * Config.ADD_NOISE_SCALE
+    # 随机选取 begin_latent 中的部分元素（比例由 Config.ADD_NOISE_SCALE 指定），
+    # 将这些位置替换为随机噪声。保持其余元素不变。
+    mask = torch.rand_like(begin_latent) < Config.ADD_NOISE_SCALE
+    latent = begin_latent.clone()
+    latent[mask] = torch.randn_like(begin_latent)[mask].to(begin_latent.dtype).to(begin_latent.device)
 
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
     img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=BEGIN_TIMESTEP, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]

@@ -62,7 +62,9 @@ for i in progress_bar:
         reuse_traj = pkl.load(f)
     begin_latent = torch.tensor(reuse_traj[begin_timestep - 1], dtype=torch.float16).cuda()
     
-    latent = begin_latent + torch.randn_like(begin_latent).to(begin_latent.dtype).to(begin_latent.device) * Config.ADD_NOISE_SCALE
+    mask = torch.rand_like(begin_latent) < Config.ADD_NOISE_SCALE
+    latent = begin_latent.clone()
+    latent[mask] = torch.randn_like(begin_latent)[mask].to(begin_latent.dtype).to(begin_latent.device)
 
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
     img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=begin_timestep, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]
