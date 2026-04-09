@@ -8,7 +8,7 @@ class Config:
     DATASET_NAME = 'coco'   # 'coco', 'pick-a-pic', or 'diffusiondb'
 
     # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline' or 'FLUX2KleinPipeline'.
-    PIPELINE_CLASS_NAME = 'FLUX2KleinPipeline'
+    PIPELINE_CLASS_NAME = 'SD2.1Pipeline'
 
     # Model checkpoint paths for supported pipeline classes.
     MODEL_CKPT_PATHS = {
@@ -56,27 +56,27 @@ class Config:
     # Timesteps for capturing small-step trajectories and attention maps. These should correspond to the timesteps used in attention_small_steps_*.py scripts. Suggested to cover the early denoising steps where retrieval-based intervention is most effective.
     """
     SD2.1
-    [979, 959, 939, 919, 899, 
-    879, 859, 839, 819, 799, 
-    779, 759, 739, 719, 699, 
-    679, 659, 639, 619, 599, 
-    579, 559, 539, 519, 499, 
-    479, 459, 439, 419, 399, 
-    379, 359, 339, 319, 299, 
-    279, 259, 239, 219, 199, 
-    179, 159, 139, 119, 99, 
-    79, 59, 39, 19, 0]
+    [981, 961, 941, 921, 901, 
+    881, 861, 841, 821, 801, 
+    781, 761, 741, 721, 701, 
+    681, 661, 641, 621, 601, 
+    581, 561, 541, 521, 501, 
+    481, 461, 441, 421, 401, 
+    381, 361, 341, 321, 301, 
+    281, 261, 241, 221, 201, 
+    181, 161, 141, 121, 101,  
+    81, 61, 41, 21, 1]
     SDXL
-    [979, 959, 939, 919, 899, 
-    879, 859, 839, 819, 799, 
-    779, 759, 739, 719, 699, 
-    679, 659, 639, 619, 599, 
-    579, 559, 539, 519, 499, 
-    479, 459, 439, 419, 399, 
-    379, 359, 339, 319, 299, 
-    279, 259, 239, 219, 199, 
-    179, 159, 139, 119, 99, 
-    79, 59, 39, 19, 0]
+    [981, 961, 941, 921, 901, 
+    881, 861, 841, 821, 801, 
+    781, 761, 741, 721, 701, 
+    681, 661, 641, 621, 601, 
+    581, 561, 541, 521, 501, 
+    481, 461, 441, 421, 401, 
+    381, 361, 341, 321, 301, 
+    281, 261, 241, 221, 201, 
+    181, 161, 141, 121, 101,  
+    81, 61, 41, 21, 1]
     FLUX
     [1000.0000,  997.3091,  994.5214,  991.6316,  988.6340,  
     985.5225,  982.2905,  978.9307,  975.4355,  971.7964,  
@@ -90,7 +90,7 @@ class Config:
     456.6408,  396.7571,  325.5933,  239.6312,  133.7189]
     """
     TIMESTEPS_FOR_SMALL_STEPS_DICT = {
-        'SD2.1Pipeline': [901, 801, 701, 601, 501],
+        'SD2.1Pipeline': [981, 901, 701],
         'SDXLPipeline': [901, 801, 701, 601, 501],
         'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187,  803.6000,  704.7356,  514.7510],
     }
@@ -100,14 +100,14 @@ class Config:
     SMALL_STEPS_INFERENCE_STEPS_FLUX = 10
 
     # Number of self trajectory steps used before latent fusion.
-    PRELIMINARY_STEPS = 4
+    PRELIMINARY_STEPS = 3
 
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory.
     OURS_SELF_WEIGHT = 0.5
 
     # Weight for self trajectory in Ours method. The final latent is a weighted sum of self and retrieved latents, where this weight controls the contribution of the self trajectory. Suggested range: 0.46 to 0.68.
-    OURS_MIX_SELF_WEIGHT_MIN = 0.46
-    OURS_MIX_SELF_WEIGHT_MAX = 0.68
+    OURS_MIX_SELF_WEIGHT_MIN = 0.4
+    OURS_MIX_SELF_WEIGHT_MAX = 0.65
 
     # Seed for torch.Generator in every pipeline sampling call.
     GENERATOR_SEED = 1024
