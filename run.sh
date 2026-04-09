@@ -58,7 +58,7 @@ run_job_num_splits() {
 	return "$rc"
 }
 
-STEP=1000
+STEP=2500
 
 # Number of GPUs available. Set via env var NUM_GPUS=4 for 4-GPU mode.
 NUM_GPUS=${NUM_GPUS:-2}
@@ -186,6 +186,7 @@ if [ "$NUM_GPUS" -eq 2 ]; then
 		run_job_num_splits 0 ./nirvana_generate.py 4
 		run_job_num_splits 0 ./redi_generate.py 4
 		run_job_num_splits 0 ./ours_generate.py 4
+		run_job_num_splits 0 ./ours_generate_mix_global_norm.py 4
 	) &
 	pid_gpu0=$!
 
@@ -194,6 +195,7 @@ if [ "$NUM_GPUS" -eq 2 ]; then
 		run_job_num_splits 1 ./recon_generate.py 4
 		run_job_num_splits 1 ./modm_generate.py 4
 		run_job_num_splits 1 ./ours_generate_mix.py 4
+		run_job_num_splits 1 ./ours_generate_global_norm.py 4
 	) &
 	pid_gpu1=$!
 
@@ -202,7 +204,7 @@ if [ "$NUM_GPUS" -eq 2 ]; then
 else
 	# NUM_GPUS==4: distribute six commands across 4 GPUs in parallel
 	JOB_PIDS=()
-	cmds=("./nirvana_generate.py" "./recon_generate.py" "./redi_generate.py" "./modm_generate.py" "./ours_generate.py" "./ours_generate_mix.py")
+	cmds=("./nirvana_generate.py" "./recon_generate.py" "./redi_generate.py" "./modm_generate.py" "./ours_generate.py" "./ours_generate_mix.py" "./ours_generate_global_norm.py" "./ours_generate_mix_global_norm.py")
 	for i in "${!cmds[@]}"; do
 		script="${cmds[$i]}"
 		gpu=$((i % NUM_GPUS))
