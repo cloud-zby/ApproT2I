@@ -58,24 +58,29 @@ run_job_num_splits() {
 	return "$rc"
 }
 
-STEP=250
+STEP=1250
 
 # Number of GPUs available. Set via env var NUM_GPUS=4 for 4-GPU mode.
 NUM_GPUS=${NUM_GPUS:-2}
 
 usage() {
 	cat <<'USAGE'
-Usage: ./run.sh [--dataset NAME] [--datasets NAME1,NAME2,...]
+Usage: ./run.sh [--dataset NAME] [--datasets NAME1,NAME2,...] [--step N]
 
 Options:
   --dataset, -d   Single dataset name (default: coco). Can be specified multiple times.
   --datasets      Comma-separated dataset names (e.g., pick-a-pic,diffusiondb).
+	--step           Denoising step for *small_steps scripts (default: 1250).
 USAGE
 }
 
 DATASETS=()
 while [[ $# -gt 0 ]]; do
 	case "$1" in
+		--step)
+			STEP="$2"
+			shift 2
+			;;
 		--dataset|-d)
 			DATASETS+=("$2")
 			shift 2
