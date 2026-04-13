@@ -91,4 +91,5 @@ with torch.no_grad():
 
 print(f"Generated {len(metainfo)} images in split {split}.")
 # 保存所有meta信息
-pickle.dump(metainfo, open(f'meta_{split}.pkl', 'wb'))
+metainfo_path = os.path.join(Config.TRAJ_ALL_META_PKL_PATH_TEMPLATE, f"meta_{split}.pkl")
+pickle.dump(metainfo, open(metainfo_path, 'wb'))

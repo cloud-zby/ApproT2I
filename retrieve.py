@@ -35,7 +35,7 @@ clip_model.eval()
 metas = []
 id_to_prompt = {}
 for split in range(NUM_OF_SPLITS):
-    meta_path = f'meta_{split}.pkl'
+    meta_path = os.path.join(Config.TRAJ_ALL_META_PKL_PATH_TEMPLATE, f"meta_{split}.pkl")
     assert os.path.exists(meta_path), f"Meta file not found: {meta_path}"
     with open(meta_path, 'rb') as f:
         meta = pkl.load(f)

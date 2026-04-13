@@ -1,3 +1,6 @@
+import torch
+
+
 class Config:
     # Dataset file paths
     COCO_JSON_PATH = 'dataset/COCO2014_dataset.json'
@@ -5,10 +8,10 @@ class Config:
     PICKAPIC_PARQUET_PATH = 'dataset/PicaPic_dataset.parquet'
 
     # Dataset selector used by load_dataset().
-    DATASET_NAME = 'coco'   # 'coco', 'pick-a-pic', or 'diffusiondb'
+    DATASET_NAME = 'diffusiondb'  # 'coco' or 'diffusiondb' or 'pick-a-pic'
 
     # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline' or 'FLUX2KleinPipeline'.
-    PIPELINE_CLASS_NAME = 'SD2.1Pipeline'
+    PIPELINE_CLASS_NAME = 'SDXLPipeline'
 
     # Model checkpoint paths for supported pipeline classes.
     MODEL_CKPT_PATHS = {
@@ -26,6 +29,9 @@ class Config:
     # Number of denoising steps for full trajectory generation.
     TRAJ_ALL_TOTAL_INFERENCE_STEPS = 50
 
+    # Output dir for split metadata dumped by traj_all.py.
+    TRAJ_ALL_META_PKL_PATH_TEMPLATE = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/"
+
     # Seed used in retrieval pipelines.
     RETRIEVE_SEED = 42
 
@@ -40,6 +46,9 @@ class Config:
 
     # Noise scale added to the weighted latent in Recon/ReDi/NIRVANA method to enhance diversity in ReCon. Suggested range: 0.0 (no noise) to 0.2 (strong noise).
     ADD_NOISE_SCALE = 0.10
+
+    # Whether to perform global latent normalization in MoDM.
+    MoDM_DO_NORM = True
 
     # Reuse-info JSON path for image/prompt retrieval output and consumers.
     REUSE_INFO_PATH = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/reuse_infos_{DISTANCE_METRIC}.json"
@@ -167,6 +176,23 @@ class Config:
         ('OursGlobalNorm', OURS_GLOBAL_NORM_OUTPUT_DIR),
         ('OursMixGlobalNorm', OURS_MIX_GLOBAL_NORM_OUTPUT_DIR),
     ]
+
+    # Compare metric switches.
+    COMPARE_ENABLE_SSIM = False
+    COMPARE_ENABLE_PSNR = False
+    COMPARE_ENABLE_L2 = False
+    COMPARE_ENABLE_CLIP_SIM = False
+    COMPARE_ENABLE_CLIP_IMG_TEXT = True     # include "Org"
+    COMPARE_ENABLE_SIGLIP2 = False          # include "Org"
+    COMPARE_ENABLE_PICKSCORE = True         # include "Org"
+    COMPARE_ENABLE_AESTHETICS = False
+    COMPARE_ENABLE_FID = False
+    COMPARE_ENABLE_KID = False
+    COMPARE_ENABLE_IS = False               # include "Org"
+
+    # SigLIP2 settings used in compare.py.
+    COMPARE_SIGLIP2_CKPT = 'model_ckpt/siglip2-giant-opt-patch16-384'
+    COMPARE_SIGLIP2_DTYPE = torch.float16 if torch.cuda.is_available() else torch.float32
 
     @classmethod
     def get_pipeline_class(cls):

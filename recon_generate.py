@@ -27,7 +27,8 @@ pipe.set_progress_bar_config(disable=True)
 # 加载待被复用的轨迹
 metas = []
 for split in range(NUM_OF_SPLITS):
-    meta = pkl.load(open(f'meta_{split}.pkl', 'rb'))
+    metainfo_path = os.path.join(Config.TRAJ_ALL_META_PKL_PATH_TEMPLATE, f"meta_{split}.pkl")
+    meta = pkl.load(open(metainfo_path, 'rb'))
     metas += meta
 num_requests = len(metas)
 

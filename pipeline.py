@@ -798,7 +798,7 @@ class SDXLPipeline(StableDiffusionXLPipeline):
             needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
 
             if needs_upcasting:
-                self.upcast_vae()
+                self.vae.to(dtype=torch.float32)
                 latents = latents.to(next(iter(self.vae.post_quant_conv.parameters())).dtype)
             elif latents.dtype != self.vae.dtype:
                 if torch.backends.mps.is_available():
@@ -819,6 +819,9 @@ class SDXLPipeline(StableDiffusionXLPipeline):
                 latents = latents * latents_std / self.vae.config.scaling_factor + latents_mean
             else:
                 latents = latents / self.vae.config.scaling_factor
+
+            if not torch.isfinite(latents).all():
+                raise FloatingPointError('Detected NaN/Inf latents before SDXL VAE decode.')
 
             image = self.vae.decode(latents, return_dict=False)[0]
 
@@ -859,10 +862,26 @@ class SDXLPipeline(StableDiffusionXLPipeline):
         if total_inference_steps <= 0:
             raise ValueError("`total_inference_steps` must be > 0.")
 
-        image = image.to(device=self._execution_device, dtype=self.vae.dtype)
+        image = image.to(device=self._execution_device)
+        # SDXL VAE expects pixel range [-1, 1].
+        if image.is_floating_point():
+            image_min = float(image.min().item())
+            image_max = float(image.max().item())
+            if image_min >= 0.0 and image_max <= 1.0 + 1e-6:
+                image = image * 2.0 - 1.0
+        image = image.clamp(-1.0, 1.0)
+
+        needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
+        if needs_upcasting:
+            self.vae.to(dtype=torch.float32)
+        encode_dtype = self.vae.dtype
+        image = image.to(dtype=encode_dtype)
 
         encoded = self.vae.encode(image, return_dict=True)
         latents = encoded.latent_dist.sample(generator=generator)
+
+        if needs_upcasting:
+            self.vae.to(dtype=torch.float16)
 
         has_latents_mean = hasattr(self.vae.config, "latents_mean") and self.vae.config.latents_mean is not None
         has_latents_std = hasattr(self.vae.config, "latents_std") and self.vae.config.latents_std is not None
@@ -910,6 +929,9 @@ class SDXLPipeline(StableDiffusionXLPipeline):
             dtype=latents.dtype,
         )
         noisy_latents = self.scheduler.add_noise(latents, noise, t_tensor)
+
+        if not torch.isfinite(noisy_latents).all():
+            raise FloatingPointError('Detected NaN/Inf noisy latents from SDXL modm_image_to_latent.')
 
         return noisy_latents
 

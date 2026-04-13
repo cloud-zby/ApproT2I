@@ -155,11 +155,56 @@ def build_pickscore_runtime(device):
     try:
         processor = transformers.AutoProcessor.from_pretrained('laion/CLIP-ViT-H-14-laion2B-s32B-b79K')
         model = transformers.AutoModel.from_pretrained('yuvalkirstain/PickScore_v1').to(device)
+        if not hasattr(model, 'get_image_features') or not hasattr(model, 'get_text_features'):
+            raise TypeError(
+                f'Loaded PickScore model type {type(model).__name__} does not expose '
+                'get_image_features/get_text_features.'
+            )
         model.eval()
         return model, processor
     except Exception as exc:
         print(f'Warning: failed to load PickScore model, skip PickScore. Details: {exc}')
         return None, None
+
+
+def _pickscore_output_to_embedding(output, kind):
+    # We need one embedding per sample with shape [B, D], not token-level [B, L, D].
+    if torch.is_tensor(output):
+        if output.ndim == 2:
+            return output
+        if output.ndim >= 3:
+            return output[:, 0, :]
+
+    if hasattr(output, 'image_embeds') and output.image_embeds is not None:
+        return output.image_embeds
+    if hasattr(output, 'text_embeds') and output.text_embeds is not None:
+        return output.text_embeds
+    if hasattr(output, 'pooler_output') and output.pooler_output is not None:
+        return output.pooler_output
+    if hasattr(output, 'last_hidden_state') and output.last_hidden_state is not None:
+        return output.last_hidden_state[:, 0, :]
+
+    if isinstance(output, dict):
+        for key in ('image_embeds', 'text_embeds', 'pooler_output'):
+            if key in output and output[key] is not None:
+                return output[key]
+        if 'last_hidden_state' in output and output['last_hidden_state'] is not None:
+            return output['last_hidden_state'][:, 0, :]
+
+    if isinstance(output, (tuple, list)) and len(output) > 0:
+        # In current transformers versions for PickScore, get_*_features often returns
+        # (last_hidden_state [B, L, C], pooler_output [B, D]). We must select [B, D].
+        for item in output:
+            if torch.is_tensor(item) and item.ndim == 2:
+                return item
+        for item in output:
+            if hasattr(item, 'pooler_output') or hasattr(item, 'image_embeds') or hasattr(item, 'text_embeds'):
+                return _pickscore_output_to_embedding(item, kind)
+        for item in output:
+            if torch.is_tensor(item) and item.ndim >= 3:
+                return item[:, 0, :]
+
+    raise TypeError(f'Unsupported PickScore {kind} embedding output type: {type(output).__name__}')
 
 
 def compute_pickscore_single(image, prompt, model, processor, device):
@@ -176,14 +221,39 @@ def compute_pickscore_single(image, prompt, model, processor, device):
                 max_length=77,
                 return_tensors='pt',
             )
-            image_inputs = {k: v.to(device) for k, v in image_inputs.items()}
-            text_inputs = {k: v.to(device) for k, v in text_inputs.items()}
+            image_inputs = image_inputs.to(device)
+            text_inputs = text_inputs.to(device)
 
-            image_embs = model.get_image_features(**image_inputs)
-            text_embs = model.get_text_features(**text_inputs)
-            image_embs = image_embs / image_embs.norm(dim=-1, keepdim=True)
-            text_embs = text_embs / text_embs.norm(dim=-1, keepdim=True)
-            score = (image_embs * text_embs).sum(dim=-1).item()
+            # Prefer return_dict=False to get plain tensors on older/newer transformers variants.
+            try:
+                image_embs_raw = model.get_image_features(**image_inputs, return_dict=False)
+            except TypeError:
+                image_embs_raw = model.get_image_features(**image_inputs)
+
+            try:
+                text_embs_raw = model.get_text_features(**text_inputs, return_dict=False)
+            except TypeError:
+                text_embs_raw = model.get_text_features(**text_inputs)
+
+            image_embs = F.normalize(_pickscore_output_to_embedding(image_embs_raw, 'image'), p=2, dim=-1)
+            text_embs = F.normalize(_pickscore_output_to_embedding(text_embs_raw, 'text'), p=2, dim=-1)
+
+            if image_embs.ndim != 2 or text_embs.ndim != 2:
+                raise ValueError(
+                    f'PickScore embeddings must be 2D [B, D], got image={tuple(image_embs.shape)}, '
+                    f'text={tuple(text_embs.shape)}'
+                )
+            if image_embs.shape[-1] != text_embs.shape[-1]:
+                raise ValueError(
+                    f'PickScore embedding dim mismatch: image={tuple(image_embs.shape)}, '
+                    f'text={tuple(text_embs.shape)}'
+                )
+
+            if hasattr(model, 'logit_scale'):
+                # Single image/prompt score in the same form as official examples.
+                score = (model.logit_scale.exp() * (text_embs * image_embs).sum(dim=-1))[0].item()
+            else:
+                score = (image_embs * text_embs).sum(dim=-1).item()
         return float(score)
     except Exception as exc:
         print(f'Warning: failed to compute PickScore for current sample. Details: {exc}')

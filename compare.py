@@ -30,21 +30,21 @@ from metric_runtime import (
 # =========================
 # Metric Switches (Global)
 # =========================
-ENABLE_SSIM = True
-ENABLE_PSNR = True
-ENABLE_L2 = True
-ENABLE_CLIP_SIM = True
-ENABLE_CLIP_IMG_TEXT = True
-ENABLE_SIGLIP2 = True
-ENABLE_PICKSCORE = True
-ENABLE_AESTHETICS = False
+COMPARE_ENABLE_SSIM = Config.COMPARE_ENABLE_SSIM
+COMPARE_ENABLE_PSNR = Config.COMPARE_ENABLE_PSNR
+COMPARE_ENABLE_L2 = Config.COMPARE_ENABLE_L2
+COMPARE_ENABLE_CLIP_SIM = Config.COMPARE_ENABLE_CLIP_SIM
+COMPARE_ENABLE_CLIP_IMG_TEXT = Config.COMPARE_ENABLE_CLIP_IMG_TEXT
+COMPARE_ENABLE_SIGLIP2 = Config.COMPARE_ENABLE_SIGLIP2
+COMPARE_ENABLE_PICKSCORE = Config.COMPARE_ENABLE_PICKSCORE
+COMPARE_ENABLE_AESTHETICS = Config.COMPARE_ENABLE_AESTHETICS
 
-ENABLE_FID = True
-ENABLE_KID = False
-ENABLE_IS = True
+COMPARE_ENABLE_FID = Config.COMPARE_ENABLE_FID
+COMPARE_ENABLE_KID = Config.COMPARE_ENABLE_KID
+COMPARE_ENABLE_IS = Config.COMPARE_ENABLE_IS
 
-SIGLIP2_CKPT = 'model_ckpt/siglip2-giant-opt-patch16-384'
-SIGLIP2_DTYPE = torch.float16 if torch.cuda.is_available() else torch.float32
+COMPARE_SIGLIP2_CKPT = Config.COMPARE_SIGLIP2_CKPT
+COMPARE_SIGLIP2_DTYPE = Config.COMPARE_SIGLIP2_DTYPE
 
 ORG_DIR = Config.TRAJ_ALL_SAVE_DIR
 SAVE_DIR = Config.COMPARE_SAVE_DIR
@@ -114,7 +114,7 @@ def main():
     if len(common_ids) == 0:
         raise ValueError(f'No common ids across {ORG_DIR} and all configured generated directories.')
 
-    need_prompt = ENABLE_CLIP_IMG_TEXT or ENABLE_SIGLIP2 or ENABLE_PICKSCORE
+    need_prompt = COMPARE_ENABLE_CLIP_IMG_TEXT or COMPARE_ENABLE_SIGLIP2 or COMPARE_ENABLE_PICKSCORE
     if need_prompt:
         missing_prompt_ids = [sample_id for sample_id in common_ids if sample_id not in prompt_map]
         if len(missing_prompt_ids) > 0:
@@ -127,34 +127,34 @@ def main():
     org_img_paths = [os.path.join(ORG_DIR, org_png_by_id[sample_id]) for sample_id in common_ids]
 
     enable = {
-        'l2': ENABLE_L2,
-        'ssim': ENABLE_SSIM,
-        'psnr': ENABLE_PSNR,
-        'clip_sim': ENABLE_CLIP_SIM,
-        'clip_img_text': ENABLE_CLIP_IMG_TEXT,
-        'siglip2': ENABLE_SIGLIP2,
-        'pickscore': ENABLE_PICKSCORE,
-        'aesthetics': ENABLE_AESTHETICS,
+        'l2': COMPARE_ENABLE_L2,
+        'ssim': COMPARE_ENABLE_SSIM,
+        'psnr': COMPARE_ENABLE_PSNR,
+        'clip_sim': COMPARE_ENABLE_CLIP_SIM,
+        'clip_img_text': COMPARE_ENABLE_CLIP_IMG_TEXT,
+        'siglip2': COMPARE_ENABLE_SIGLIP2,
+        'pickscore': COMPARE_ENABLE_PICKSCORE,
+        'aesthetics': COMPARE_ENABLE_AESTHETICS,
     }
 
     runtimes = {}
-    if ENABLE_CLIP_SIM or ENABLE_CLIP_IMG_TEXT:
+    if COMPARE_ENABLE_CLIP_SIM or COMPARE_ENABLE_CLIP_IMG_TEXT:
         clip_model, clip_preprocess = build_clip_runtime(device)
         runtimes['clip_model'] = clip_model
         runtimes['clip_preprocess'] = clip_preprocess
 
-    if ENABLE_SIGLIP2:
-        siglip2_model, siglip2_processor, siglip2_max_text_len = build_siglip2_runtime(device, SIGLIP2_CKPT, SIGLIP2_DTYPE)
+    if COMPARE_ENABLE_SIGLIP2:
+        siglip2_model, siglip2_processor, siglip2_max_text_len = build_siglip2_runtime(device, COMPARE_SIGLIP2_CKPT, COMPARE_SIGLIP2_DTYPE)
         runtimes['siglip2_model'] = siglip2_model
         runtimes['siglip2_processor'] = siglip2_processor
         runtimes['siglip2_max_text_len'] = siglip2_max_text_len
 
-    if ENABLE_PICKSCORE:
+    if COMPARE_ENABLE_PICKSCORE:
         pickscore_model, pickscore_processor = build_pickscore_runtime(device)
         runtimes['pickscore_model'] = pickscore_model
         runtimes['pickscore_processor'] = pickscore_processor
 
-    if ENABLE_AESTHETICS:
+    if COMPARE_ENABLE_AESTHETICS:
         aesthetics_model, aesthetics_processor = build_aesthetics_runtime(device)
         runtimes['aesthetics_model'] = aesthetics_model
         runtimes['aesthetics_processor'] = aesthetics_processor
@@ -176,14 +176,14 @@ def main():
     comparison_results = {}
 
     sample_metric_specs = [
-        ('SSIM', 'ssim', ENABLE_SSIM),
-        ('PSNR', 'psnr', ENABLE_PSNR),
-        ('L2', 'l2', ENABLE_L2),
-        ('CLIP_IMG_IMG', 'clip_sim', ENABLE_CLIP_SIM),
-        ('CLIP_IMG_TEXT', 'clip_img_text', ENABLE_CLIP_IMG_TEXT),
-        ('SigLIP2', 'siglip2', ENABLE_SIGLIP2),
-        ('PickScore', 'pickscore', ENABLE_PICKSCORE),
-        ('Aesthetics', 'aesthetics', ENABLE_AESTHETICS),
+        ('SSIM', 'ssim', COMPARE_ENABLE_SSIM),
+        ('PSNR', 'psnr', COMPARE_ENABLE_PSNR),
+        ('L2', 'l2', COMPARE_ENABLE_L2),
+        ('CLIP_IMG_IMG', 'clip_sim', COMPARE_ENABLE_CLIP_SIM),
+        ('CLIP_IMG_TEXT', 'clip_img_text', COMPARE_ENABLE_CLIP_IMG_TEXT),
+        ('SigLIP2', 'siglip2', COMPARE_ENABLE_SIGLIP2),
+        ('PickScore', 'pickscore', COMPARE_ENABLE_PICKSCORE),
+        ('Aesthetics', 'aesthetics', COMPARE_ENABLE_AESTHETICS),
     ]
     for metric_name, metric_key, enabled_flag in sample_metric_specs:
         if enabled_flag:
@@ -191,37 +191,31 @@ def main():
                 'per_image': _build_per_image_metric(common_ids, METHOD_DIRS, method_metrics, metric_key)
             }
 
-    if ENABLE_SSIM:
+    if COMPARE_ENABLE_SSIM:
         rows = summarize_named_lists([(name, method_metrics[name]['ssim']) for name, _ in METHOD_DIRS])
         print_metric_rows('SSIM', rows)
         summary['SSIM'] = rows
         comparison_results['SSIM']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_PSNR:
+    if COMPARE_ENABLE_PSNR:
         rows = summarize_named_lists([(name, method_metrics[name]['psnr']) for name, _ in METHOD_DIRS])
         print_metric_rows('PSNR', rows)
         summary['PSNR'] = rows
         comparison_results['PSNR']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_L2:
+    if COMPARE_ENABLE_L2:
         rows = summarize_named_lists([(name, method_metrics[name]['l2']) for name, _ in METHOD_DIRS])
         print_metric_rows('L2', rows)
         summary['L2'] = rows
         comparison_results['L2']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_CLIP_SIM:
+    if COMPARE_ENABLE_CLIP_SIM:
         rows = summarize_named_lists([(name, method_metrics[name]['clip_sim']) for name, _ in METHOD_DIRS])
         print_metric_rows('CLIP-Image-Image', rows)
         summary['CLIP_IMG_IMG'] = rows
         comparison_results['CLIP_IMG_IMG']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_CLIP_IMG_TEXT:
-        rows = summarize_named_lists([(name, method_metrics[name]['clip_img_text']) for name, _ in METHOD_DIRS])
-        print_metric_rows('CLIP-Image-Text', rows)
-        summary['CLIP_IMG_TEXT'] = rows
-        comparison_results['CLIP_IMG_TEXT']['summary'] = _rows_to_summary_dict(rows)
-
-    if ENABLE_SIGLIP2 or ENABLE_PICKSCORE or ENABLE_AESTHETICS or ENABLE_CLIP_IMG_TEXT:
+    if COMPARE_ENABLE_SIGLIP2 or COMPARE_ENABLE_PICKSCORE or COMPARE_ENABLE_AESTHETICS or COMPARE_ENABLE_CLIP_IMG_TEXT:
         org_png_ids = sorted_ids(set(org_png_by_id.keys()))
         org_prompt_ids = [sample_id for sample_id in org_png_ids if sample_id in prompt_map]
         org_prompts = [prompt_map[sample_id] for sample_id in org_prompt_ids]
@@ -238,7 +232,7 @@ def main():
     else:
         org_metrics = {}
 
-    if ENABLE_SIGLIP2:
+    if COMPARE_ENABLE_SIGLIP2:
         rows = summarize_named_lists(
             [(name, method_metrics[name]['siglip2']) for name, _ in METHOD_DIRS] + [('Org', org_metrics['siglip2'])]
         )
@@ -246,7 +240,7 @@ def main():
         summary['SigLIP2'] = rows
         comparison_results['SigLIP2']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_PICKSCORE:
+    if COMPARE_ENABLE_PICKSCORE:
         rows = summarize_named_lists(
             [(name, method_metrics[name]['pickscore']) for name, _ in METHOD_DIRS] + [('Org', org_metrics['pickscore'])]
         )
@@ -254,7 +248,7 @@ def main():
         summary['PickScore'] = rows
         comparison_results['PickScore']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_AESTHETICS:
+    if COMPARE_ENABLE_AESTHETICS:
         rows = summarize_named_lists(
             [(name, method_metrics[name]['aesthetics']) for name, _ in METHOD_DIRS] + [('Org', org_metrics['aesthetics'])]
         )
@@ -262,13 +256,15 @@ def main():
         summary['Aesthetics'] = rows
         comparison_results['Aesthetics']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_CLIP_IMG_TEXT:
+    if COMPARE_ENABLE_CLIP_IMG_TEXT:
         rows = summarize_named_lists(
             [(name, method_metrics[name]['clip_img_text']) for name, _ in METHOD_DIRS] + [('Org', org_metrics['clip_img_text'])]
         )
         print_metric_rows('CLIP-Image-Text-With-Org', rows)
+        summary['CLIP_IMG_TEXT'] = rows
+        comparison_results['CLIP_IMG_TEXT']['summary'] = _rows_to_summary_dict(rows)
 
-    if ENABLE_FID or ENABLE_KID or ENABLE_IS:
+    if COMPARE_ENABLE_FID or COMPARE_ENABLE_KID or COMPARE_ENABLE_IS:
         inception, preprocess_fid, preprocess_is, inception_device = build_inception_runtime()
     else:
         inception = None
@@ -276,34 +272,34 @@ def main():
         preprocess_is = None
         inception_device = None
 
-    if ENABLE_FID or ENABLE_KID:
+    if COMPARE_ENABLE_FID or COMPARE_ENABLE_KID:
         print('\n===== FID/KID (configured methods only) =====')
         org_feats = extract_inception_features(org_img_paths, ORG_DIR, inception, preprocess_fid, inception_device)
 
-        if ENABLE_FID:
+        if COMPARE_ENABLE_FID:
             fid_rows = []
-        if ENABLE_KID:
+        if COMPARE_ENABLE_KID:
             kid_rows = []
 
         for method_name, dir_path in METHOD_DIRS:
             gen_img_paths = [os.path.join(dir_path, method_png_by_id[method_name][sample_id]) for sample_id in common_ids]
             gen_feats = extract_inception_features(gen_img_paths, dir_path, inception, preprocess_fid, inception_device)
-            if ENABLE_FID:
+            if COMPARE_ENABLE_FID:
                 fid_rows.append((method_name, compute_fid_from_feats(gen_feats, org_feats), 0.0))
-            if ENABLE_KID:
+            if COMPARE_ENABLE_KID:
                 kid_mean, kid_std = compute_kid_from_feats(gen_feats, org_feats)
                 kid_rows.append((method_name, kid_mean, kid_std))
 
-        if ENABLE_FID:
+        if COMPARE_ENABLE_FID:
             print_metric_rows('FID', fid_rows)
             summary['FID'] = fid_rows
             comparison_results['FID'] = {'summary': _rows_to_summary_dict(fid_rows)}
-        if ENABLE_KID:
+        if COMPARE_ENABLE_KID:
             print_metric_rows('KID', kid_rows)
             summary['KID'] = kid_rows
             comparison_results['KID'] = {'summary': _rows_to_summary_dict(kid_rows)}
 
-    if ENABLE_IS:
+    if COMPARE_ENABLE_IS:
         print('\n===== IS (configured methods only) =====')
         is_rows = []
         for method_name, dir_path in METHOD_DIRS:
@@ -311,6 +307,11 @@ def main():
             probs = extract_inception_probs(gen_img_paths, dir_path, inception, preprocess_is, inception_device)
             is_mean, is_std = compute_inception_score_from_probs(probs, splits=10)
             is_rows.append((method_name, is_mean, is_std))
+
+        org_is_probs = extract_inception_probs(org_img_paths, ORG_DIR, inception, preprocess_is, inception_device)
+        org_is_mean, org_is_std = compute_inception_score_from_probs(org_is_probs, splits=10)
+        is_rows.append(('Org', org_is_mean, org_is_std))
+
         print_metric_rows('IS', is_rows)
         summary['IS'] = is_rows
         comparison_results['IS'] = {'summary': _rows_to_summary_dict(is_rows)}

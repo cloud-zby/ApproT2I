@@ -32,7 +32,8 @@ pipe.set_progress_bar_config(disable=True)
 # 加载待被复用的轨迹
 metas = []
 for split in range(NUM_OF_SPLITS):
-    meta = pkl.load(open(f'meta_{split}.pkl', 'rb'))
+    metainfo_path = os.path.join(Config.TRAJ_ALL_META_PKL_PATH_TEMPLATE, f"meta_{split}.pkl")
+    meta = pkl.load(open(metainfo_path, 'rb'))
     metas += meta
 
 num_requests = len(metas)
@@ -79,10 +80,13 @@ def compute_org_latent_stats(org_dir: str, step: int) -> tuple[float, float]:
     )
     return avg_mean, avg_std
 
-target_mean, target_std = compute_org_latent_stats(
-        org_dir=Config.TRAJ_ALL_SAVE_DIR,
-        step=Config.GENERATION_BEGIN_TIMESTEP,
-)
+if Config.MoDM_DO_NORM:
+    target_mean, target_std = compute_org_latent_stats(
+            org_dir=Config.TRAJ_ALL_SAVE_DIR,
+            step=Config.GENERATION_BEGIN_TIMESTEP,
+    )
+else:
+    target_mean, target_std = None, None
 
 progress_bar = tqdm(range(num_requests), desc='Generating images')
 for i in progress_bar:
@@ -110,12 +114,13 @@ for i in progress_bar:
         generator=generator,
     )
     # 将latent分布修正为target_mean, target_std
-    latent_dtype = latent.dtype
-    latent = latent.float()
-    latent_mean = latent.mean().item()
-    latent_std = latent.std().item()
-    latent = (latent - latent_mean) / (latent_std + 1e-6) * target_std + target_mean
-    latent = latent.to(dtype=latent_dtype)
+    if Config.MoDM_DO_NORM:
+        latent_dtype = latent.dtype
+        latent = latent.float()
+        latent_mean = latent.mean().item()
+        latent_std = latent.std().item()
+        latent = (latent - latent_mean) / (latent_std + 1e-6) * target_std + target_mean
+        latent = latent.to(dtype=latent_dtype)
     
     # 生成
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
