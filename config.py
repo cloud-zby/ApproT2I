@@ -8,7 +8,7 @@ class Config:
     PICKAPIC_PARQUET_PATH = 'dataset/PicaPic_dataset.parquet'
 
     # Dataset selector used by load_dataset().
-    DATASET_NAME = 'diffusiondb'  # 'coco' or 'diffusiondb' or 'pick-a-pic'
+    DATASET_NAME = 'coco'  # 'coco' or 'diffusiondb' or 'pick-a-pic'
 
     # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline' or 'FLUX2KleinPipeline'.
     PIPELINE_CLASS_NAME = 'SDXLPipeline'
@@ -99,8 +99,8 @@ class Config:
     456.6408,  396.7571,  325.5933,  239.6312,  133.7189]
     """
     TIMESTEPS_FOR_SMALL_STEPS_DICT = {
-        'SD2.1Pipeline': [981, 901, 701],
-        'SDXLPipeline': [901, 801, 701, 601, 501],
+        'SD2.1Pipeline': [981, 901, 701, 601, 501],
+        'SDXLPipeline': [999, 721, 701, 601, 501],
         'FLUX2KleinPipeline': [1000.0000,  988.4957,  974.4825,  957.0386,  934.7291, 905.1879, 864.2187,  803.6000,  704.7356,  514.7510],
     }
     TIMESTEPS_FOR_SMALL_STEPS = TIMESTEPS_FOR_SMALL_STEPS_DICT[PIPELINE_CLASS_NAME]
