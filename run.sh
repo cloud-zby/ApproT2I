@@ -251,8 +251,8 @@ run_pipeline() {
 		(
 			run_job_num_splits 0 ./nirvana_generate.py 4
 			run_job_num_splits 0 ./redi_generate.py 4
-			run_job_num_splits 0 ./ours_generate.py 4
-			run_job_num_splits 0 ./ours_generate_mix_global_norm.py 4
+			run_job_num_splits 0 ./ours_generate_tt.py 4
+			run_job_num_splits 0 ./ours_generate_mix_tt.py 4
 		) &
 		pid_gpu0=$!
 
@@ -260,8 +260,8 @@ run_pipeline() {
 		(
 			run_job_num_splits 1 ./recon_generate.py 4
 			run_job_num_splits 1 ./modm_generate.py 4
-			run_job_num_splits 1 ./ours_generate_mix.py 4
-			run_job_num_splits 1 ./ours_generate_global_norm.py 4
+			run_job_num_splits 1 ./ours_generate_mix_ti.py 4
+			run_job_num_splits 1 ./ours_generate_ti.py 4
 		) &
 		pid_gpu1=$!
 
@@ -279,7 +279,7 @@ run_pipeline() {
 		wait_all_jobs
 
 		JOB_PIDS=()
-		wave2=("./ours_generate.py" "./ours_generate_mix.py" "./ours_generate_global_norm.py" "./ours_generate_mix_global_norm.py")
+		wave2=("./ours_generate_tt.py" "./ours_generate_mix_tt.py" "./ours_generate_ti.py" "./ours_generate_mix_ti.py")
 		for i in "${!wave2[@]}"; do
 			script="${wave2[$i]}"
 			gpu=$i
