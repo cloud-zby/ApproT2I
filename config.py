@@ -8,7 +8,8 @@ class Config:
     PICKAPIC_PARQUET_PATH = 'dataset/PicaPic_dataset.parquet'
 
     # Dataset selector used by load_dataset().
-    DATASET_NAME = 'coco'  # 'coco' or 'diffusiondb' or 'pick-a-pic'
+    # 'coco' or 'diffusiondb' or 'pick-a-pic'
+    DATASET_NAME = 'coco'
 
     # Pipeline class selector: 'SD2.1Pipeline' or 'SDXLPipeline' or 'FLUX2KleinPipeline'.
     PIPELINE_CLASS_NAME = 'SDXLPipeline'

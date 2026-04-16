@@ -54,10 +54,12 @@ You can run all-in-one script to execute the entire pipeline.
 export HF_ENDPOINT=https://hf-mirror.com
 # 以四卡模式运行
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-NUM_GPUS=4 nohup ./run.sh --datasets coco,pick-a-pic,diffusiondb --step 1250 > run.log 2>&1 &
+# 生成10000张图片
+NUM_GPUS=4 nohup ./run.sh --datasets coco,pick-a-pic,diffusiondb --step 2500 > run.log 2>&1 &
 # 以两卡模式运行
 export CUDA_VISIBLE_DEVICES=0,1
-NUM_GPUS=2 nohup ./run.sh --dataset coco --step 1250 > run.log 2>&1 &
+# 生成10000张图片
+NUM_GPUS=2 nohup ./run.sh --dataset coco --step 2500 > run.log 2>&1 &
 ps aux | grep '[r]un.sh'
 ```
 Or, you can run the following commands step by step.
