@@ -173,8 +173,8 @@ class Config:
         ('Recon', RECON_OUTPUT_DIR),
         ('OursTT', OURS_T_T_OUTPUT_DIR),
         ('OursMixTT', OURS_MIX_T_T_OUTPUT_DIR),
-        ('OursGlobalNorm', OURS_T_I_OUTPUT_DIR),
-        ('OursMixGlobalNorm', OURS_MIX_T_I_OUTPUT_DIR),
+        ('OursTI', OURS_T_I_OUTPUT_DIR),
+        ('OursMixTI', OURS_MIX_T_I_OUTPUT_DIR),
     ]
 
     # Compare metric switches.
