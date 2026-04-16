@@ -129,16 +129,18 @@ cat modm.log
 
 # 10. 本方法生成图像（latent粒度进行融合）
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=0 nohup python ./ours_generate.py --num_of_splits 4 > ours.log 2>&1 &
-CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_global_norm.py --num_of_splits 4 > ours_global_norm.log 2>&1 &
-ps aux | grep '[o]urs_generate.py'
+CUDA_VISIBLE_DEVICES=0 nohup python ./ours_generate_tt.py --num_of_splits 4 > ours_tt.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python ./ours_generate_ti.py --num_of_splits 4 > ours_ti.log 2>&1 &
+ps aux | grep '[o]urs_generate_tt.py'
+ps aux | grep '[o]urs_generate_ti.py'
 cat ours.log
 
 # 11. 本方法生成图像（token粒度根据交叉注意力分数进行融合）
 source .venv/bin/activate
-CUDA_VISIBLE_DEVICES=2 nohup python ./ours_generate_mix.py --num_of_splits 4 > ours_mix.log 2>&1 &
-CUDA_VISIBLE_DEVICES=3 nohup python ./ours_generate_mix_global_norm.py --num_of_splits 4 > ours_generate_mix_global_norm.log 2>&1 &
-ps aux | grep '[o]urs_generate_mix.py'
+CUDA_VISIBLE_DEVICES=2 nohup python ./ours_generate_mix_tt.py --num_of_splits 4 > ours_mix_tt.log 2>&1 &
+CUDA_VISIBLE_DEVICES=3 nohup python ./ours_generate_mix_ti.py --num_of_splits 4 > ours_mix_ti.log 2>&1 &
+ps aux | grep '[o]urs_generate_mix_tt.py'
+ps aux | grep '[o]urs_generate_mix_ti.py'
 cat ours_mix.log
 
 # 12. 比较生成质量

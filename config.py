@@ -145,16 +145,16 @@ class Config:
     MODM_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/modm_generated"
 
     # Output directory for Ours generated images.
-    OURS_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated"
+    OURS_T_T_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_tt"
 
     # Output directory for Ours(global norm) generated images.
-    OURS_GLOBAL_NORM_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_global_norm"
+    OURS_T_I_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_ti"
 
     # Output directory for OursMix generated images.
-    OURS_MIX_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix"
+    OURS_MIX_T_T_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix_tt"
 
     # Output directory for OursMix(global norm) generated images.
-    OURS_MIX_GLOBAL_NORM_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix_global_norm"
+    OURS_MIX_T_I_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/ours_generated_mix_ti"
 
     # Output directory for Recon generated images.
     RECON_OUTPUT_DIR = f"generated_results/{PIPELINE_CLASS_NAME.replace('Pipeline', '')}/{DATASET_NAME}/recon_generated"
@@ -171,10 +171,10 @@ class Config:
         ('MoDM', MODM_OUTPUT_DIR),
         ('ReDi', REDI_OUTPUT_DIR),
         ('Recon', RECON_OUTPUT_DIR),
-        ('Ours', OURS_OUTPUT_DIR),
-        ('OursMix', OURS_MIX_OUTPUT_DIR),
-        ('OursGlobalNorm', OURS_GLOBAL_NORM_OUTPUT_DIR),
-        ('OursMixGlobalNorm', OURS_MIX_GLOBAL_NORM_OUTPUT_DIR),
+        ('OursTT', OURS_T_T_OUTPUT_DIR),
+        ('OursMixTT', OURS_MIX_T_T_OUTPUT_DIR),
+        ('OursGlobalNorm', OURS_T_I_OUTPUT_DIR),
+        ('OursMixGlobalNorm', OURS_MIX_T_I_OUTPUT_DIR),
     ]
 
     # Compare metric switches.

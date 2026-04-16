@@ -152,7 +152,7 @@ def ours_mix_sd_main():
         if BEGIN_TIMESTEP is None or reuse_img_idx is None:
             print(f"Skipping image_id={sample_id} as no reuse info found.")
             continue
-        output_path = f"{Config.OURS_MIX_GLOBAL_NORM_OUTPUT_DIR}/{sample_id}_{BEGIN_TIMESTEP}.png"
+        output_path = f"{Config.OURS_MIX_T_I_OUTPUT_DIR}/{sample_id}_{BEGIN_TIMESTEP}.png"
         if os.path.exists(output_path):
             continue
 
@@ -216,7 +216,7 @@ def ours_mix_sd_main():
         
         generator = torch.Generator(device).manual_seed(Config.GENERATOR_SEED)
         img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=BEGIN_TIMESTEP, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]
-        os.makedirs(Config.OURS_MIX_GLOBAL_NORM_OUTPUT_DIR, exist_ok=True)
+        os.makedirs(Config.OURS_MIX_T_I_OUTPUT_DIR, exist_ok=True)
         img.save(output_path)
 
         progress_bar.set_postfix_str(
@@ -253,7 +253,7 @@ def ours_mix_flux_main():
         if BEGIN_TIMESTEP is None or reuse_img_idx is None:
             print(f"Skipping image_id={sample_id} as no reuse info found.")
             continue
-        output_path = f"{Config.OURS_MIX_GLOBAL_NORM_OUTPUT_DIR}/{sample_id}_{BEGIN_TIMESTEP}.png"
+        output_path = f"{Config.OURS_MIX_T_I_OUTPUT_DIR}/{sample_id}_{BEGIN_TIMESTEP}.png"
         if os.path.exists(output_path):
             continue
 
@@ -321,7 +321,7 @@ def ours_mix_flux_main():
         
         generator = torch.Generator(device).manual_seed(Config.GENERATOR_SEED)
         img = pipe(prompt=prompt, head_start_latents=latent, head_start_step=BEGIN_TIMESTEP, guidance_scale=Config.GUIDANCE_SCALE, generator=generator, num_inference_steps=TOTAL_INFERENCE_STEPS).images[0]
-        os.makedirs(Config.OURS_MIX_GLOBAL_NORM_OUTPUT_DIR, exist_ok=True)
+        os.makedirs(Config.OURS_MIX_T_I_OUTPUT_DIR, exist_ok=True)
         img.save(output_path)
 
         progress_bar.set_postfix_str(
