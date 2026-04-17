@@ -16,7 +16,7 @@ from config import Config
 
 SDPipeline = Config.get_pipeline_class()
 
-if Config.PIPELINE_CLASS_NAME != "FLUX2KleinPipeline":
+if Config.PIPELINE_CLASS_NAME == "FLUX2KleinPipeline":
     SMALL_STEPS_INFERENCE_STEPS_FLUX = Config.SMALL_STEPS_INFERENCE_STEPS_FLUX
 elif Config.PIPELINE_CLASS_NAME == "SD2.1Pipeline" or Config.PIPELINE_CLASS_NAME == "SDXLPipeline":
     SMALL_STEPS_INFERENCE_STEPS_FLUX = None

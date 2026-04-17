@@ -125,12 +125,27 @@ class SD2Pipeline(StableDiffusionPipeline):
                 negative_prompt,
             )
 
+        if early_steps_timesteps is not None:
+            if timesteps is not None:
+                raise ValueError("Pass only one of `timesteps` and `early_steps_timesteps`.")
+            timesteps = early_steps_timesteps
+
         # 4. Prepare timesteps
         if timesteps is None:
             self.scheduler.set_timesteps(num_inference_steps, device=device)
             timesteps = self.scheduler.timesteps
         else:
-            self.scheduler.timesteps = timesteps
+            if isinstance(timesteps, torch.Tensor):
+                timesteps = timesteps.tolist()
+            try:
+                # Keep scheduler internal buffers (e.g. sigmas / step index mapping) in sync.
+                self.scheduler.set_timesteps(timesteps=timesteps, device=device)
+                timesteps = self.scheduler.timesteps
+            except TypeError as exc:
+                raise ValueError(
+                    f"Scheduler {self.scheduler.__class__.__name__} does not support explicit timesteps."
+                ) from exc
+            num_inference_steps = len(timesteps)
         # print(timesteps)
 
         # 5. Prepare latent variables
@@ -164,21 +179,6 @@ class SD2Pipeline(StableDiffusionPipeline):
         # 7. Denoising loop
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            
-            if early_steps_timesteps is not None:
-                if verbose:
-                    print(
-                        f"Using custom {len({early_steps_timesteps})}-steps early_steps_timesteps ({early_steps_timesteps}) instaed of {len(timesteps)}-steps scheduler timesteps ({timesteps})"
-                    )
-                if isinstance(early_steps_timesteps, list):
-                    timesteps = torch.tensor(early_steps_timesteps).to(timesteps.device).to(timesteps.dtype)
-                elif isinstance(early_steps_timesteps, torch.Tensor):
-                    timesteps = early_steps_timesteps.to(timesteps.device).to(timesteps.dtype)
-                else:
-                    raise ValueError(
-                        f"`early_steps_timesteps` must be a list or a torch.Tensor, but got {type(early_steps_timesteps)}"
-                    )
-            
             for i, t in enumerate(timesteps):
                 # print((i, t))
                 if (
@@ -601,6 +601,18 @@ class SDXLPipeline(StableDiffusionXLPipeline):
             clip_skip=self.clip_skip,
         )
 
+        if early_steps_timesteps is not None:
+            if timesteps is not None:
+                raise ValueError("Pass only one of `timesteps` and `early_steps_timesteps`.")
+            if isinstance(early_steps_timesteps, torch.Tensor):
+                timesteps = early_steps_timesteps.tolist()
+            elif isinstance(early_steps_timesteps, list):
+                timesteps = early_steps_timesteps
+            else:
+                raise ValueError(
+                    f"`early_steps_timesteps` must be a list or a torch.Tensor, but got {type(early_steps_timesteps)}"
+                )
+
         # 4. Prepare timesteps
         if XLA_AVAILABLE:
             timestep_device = "cpu"
@@ -713,21 +725,6 @@ class SDXLPipeline(StableDiffusionXLPipeline):
 
         self._num_timesteps = len(timesteps)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            
-            if early_steps_timesteps is not None:
-                if verbose:
-                    print(
-                        f"Using custom {len({early_steps_timesteps})}-steps early_steps_timesteps ({early_steps_timesteps}) instaed of {len(timesteps)}-steps scheduler timesteps ({timesteps})"
-                    )
-                if isinstance(early_steps_timesteps, list):
-                    timesteps = torch.tensor(early_steps_timesteps).to(timesteps.device).to(timesteps.dtype)
-                elif isinstance(early_steps_timesteps, torch.Tensor):
-                    timesteps = early_steps_timesteps.to(timesteps.device).to(timesteps.dtype)
-                else:
-                    raise ValueError(
-                        f"`early_steps_timesteps` must be a list or a torch.Tensor, but got {type(early_steps_timesteps)}"
-                    )
-                
             for i, t in enumerate(timesteps):
 
                 if self.interrupt:
