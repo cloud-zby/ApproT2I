@@ -63,6 +63,9 @@ class Config:
     # Start timestep for reuse-based generation methods.
     GENERATION_BEGIN_TIMESTEP = 15
 
+    # When comparison, compare with offical ground-truth images in datasets or with the image generated without cache.
+    COMPARE_WITH_GT_IMAGES = True
+
     # Timesteps for capturing small-step trajectories and attention maps. These should correspond to the timesteps used in attention_small_steps_*.py scripts. Suggested to cover the early denoising steps where retrieval-based intervention is most effective.
     """
     SD2.1
