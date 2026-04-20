@@ -150,7 +150,7 @@ source .venv/bin/activate
 CUDA_VISIBLE_DEVICES=0 python ./compare.py
 CUDA_VISIBLE_DEVICES=0 nohup python ./compare.py > compare.log 2>&1 &
 ```
-比较结果将会保存在当前目录下的`comparison_images`文件夹中，包含多个SVG图和汇总的Excel表。
+比较结果将会保存在当前实验目录下的`comparison_images`文件夹中，包含多个SVG图和汇总的Excel表。
 ## Troubleshooting
 如果卡住
 ```bash
