@@ -19,16 +19,16 @@ from pipeline import SD2Pipeline
 # -----------------------------
 # Global parameters for easy reuse
 # -----------------------------
-UUID_ORG = "33629"
-ORG_STEP_NUMBER = 30
+UUID_ORG = "138"
+ORG_STEP_NUMBER = 50
 ORG_STEP_INDEX = ORG_STEP_NUMBER - 1
 
 UUID_SMALL = UUID_ORG
-SMALL_STEP_NUMBER = 4
+SMALL_STEP_NUMBER = 2
 SMALL_STEP_INDEX = SMALL_STEP_NUMBER - 1
 
 
-RESULT_ROOT = os.path.join(PROJECT_ROOT, "generated_results", "SD2.1", "coco")
+RESULT_ROOT = os.path.join(PROJECT_ROOT, "temp_generated_results_biyelunwen", "SD2.1", "coco")
 
 ORG_TRAJ_PKL = os.path.join(RESULT_ROOT, "org_images", f"{UUID_ORG}.pkl")
 SMALL_TRAJ_PKL = os.path.join(RESULT_ROOT, "small_steps_images", f"{UUID_SMALL}.pkl")
