@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+# Do not exit the whole script when a child job returns non-zero.
+# Keep -u and pipefail to catch unset variables and pipeline errors.
+set -uo pipefail
 
+# Base logs directory (per-dataset override applied inside loop)
 LOG_DIR="./logs"
 mkdir -p "$LOG_DIR"
 
@@ -299,5 +302,10 @@ run_pipeline() {
 for ds in "${DATASETS[@]}"; do
 	echo "===== Dataset: ${ds} ====="
 	update_dataset_name "$ds"
+
+	# Use a per-dataset log directory so logs are grouped by dataset name
+	LOG_DIR="./logs/${ds}"
+	mkdir -p "$LOG_DIR"
+
 	run_pipeline
 done
