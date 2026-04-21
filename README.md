@@ -36,11 +36,26 @@ pip install openpyxl -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 ## Data & Model Preparation
 ```bash
-# 下载数据，使得存在三个文件：dataset/COCO2014_dataset.json，dataset/DiffusionDB_dataset.parquet，dataset/PicaPic_dataset.parquet
+# 下载文本提示词数据，使得存在三个文件：dataset/COCO2014_dataset.json，dataset/DiffusionDB_dataset.parquet，dataset/PicaPic_dataset.parquet
 pip install huggingface_hub -i https://pypi.tuna.tsinghua.edu.cn/simple
-hf download zbyzby/ApproximateCache --local-dir ./dataset
+hf download zbyzby/ApproximateCache --local-dir ./dataset 
 # 或者使用GIT LFS拉取
 git lfs pull
+
+# 下载图像数据，用于结果的评估
+# MS-COCO
+mkdir ./dataset/images/
+mkdir ./dataset/images/MS-COCO/
+wget http://images.cocodataset.org/zips/train2014.zip
+unzip -n dataset/images/MS-COCO/train2014.zip -d dataset/images/MS-COCO
+# DiffusionDB
+mkdir ./dataset/images/DiffusionDB
+export HF_ENDPOINT=https://hf-mirror.com
+hf download poloclub/diffusiondb --repo-type dataset --include "images/**" --local-dir ./dataset/images/DiffusionDB
+# Pick-a-Pic
+mkdir ./dataset/images/Pick-a-Pic
+export HF_ENDPOINT=https://hf-mirror.com
+hf download pickapic-anonymous/pickapic_v1 --repo-type dataset --local-dir ./dataset/images/Pick-a-Pic
 
 # 下载模型
 modelscope download --model AI-ModelScope/stable-diffusion-2-1 --local_dir ./model_ckpt/stable-diffusion-2-1
@@ -51,6 +66,7 @@ modelscope download --model google/siglip2-giant-opt-patch16-384 --local_dir ./m
 ## Running
 You can run all-in-one script to execute the entire pipeline.
 ```bash
+source .venv/bin/activate
 export HF_ENDPOINT=https://hf-mirror.com
 # 以四卡模式运行
 export CUDA_VISIBLE_DEVICES=0,1,2,3
