@@ -47,7 +47,8 @@ git lfs pull
 mkdir ./dataset/images/
 mkdir ./dataset/images/MS-COCO/
 wget http://images.cocodataset.org/zips/train2014.zip
-unzip -n dataset/images/MS-COCO/train2014.zip -d dataset/images/MS-COCO
+nohup unzip -n dataset/images/MS-COCO/train2014.zip -d dataset/images/MS-COCO > unzip.log 2>&1 &
+ps aux | grep unzip
 # DiffusionDB
 mkdir ./dataset/images/DiffusionDB
 export HF_ENDPOINT=https://hf-mirror.com

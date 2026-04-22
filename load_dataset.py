@@ -107,3 +107,29 @@ def load_dataset(
         f'Unsupported dataset_name: {dataset_name}. '\
         'Supported values: coco, diffusiondb, pick-a-pic.'
     )
+
+def load_coco_image(uuid: str):
+    pass
+
+def load_diffusiondb_image(uuid: str):
+    pass
+
+def load_pickapic_image(uuid: str):
+    pass
+
+def load_image(dataset_name: str, uuid: str | int):
+    dataset_key = str(dataset_name).strip().lower().replace('_', '-').replace(' ', '-')
+
+    if dataset_key == 'coco':
+        return load_coco_image(str(uuid))
+
+    if dataset_key in ('diffusiondb', 'diffusion-db'):
+        return load_diffusiondb_image(str(uuid))
+
+    if dataset_key in ('pick-a-pic', 'pickapic', 'picka-pic', 'pick-apic'):
+        return load_pickapic_image(str(uuid))
+
+    raise ValueError(
+        f'Unsupported dataset_name: {dataset_name}. '\
+        'Supported values: coco, diffusiondb, pick-a-pic.'
+    )
