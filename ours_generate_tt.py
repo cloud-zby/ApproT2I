@@ -138,9 +138,6 @@ for i in progress_bar:
     self_latent_matched = self_latent_matched.to(dtype=DTYPE)
 
     latent = self_latent_matched * OURS_SELF_WEIGHT + begin_latent * (1 - OURS_SELF_WEIGHT)
-    # latent = self_latent_matched
-    # latent = self_latent
-    # latent = begin_latent
 
     # print(f"Latent stats: mean={latent.mean().item():.4f}, std={latent.std().item():.4f}")
     # latent = (latent - latent.mean()) / (latent.std() + 1e-8)
