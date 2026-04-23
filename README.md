@@ -1,13 +1,15 @@
 # Approximate Cache for Text-to-Image Diffusion Models
 ## Installation
-通过uv安装依赖
+通过VENV安装依赖
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 
+# 部分设备没有相关依赖库，需要ROOT权限或sudo安装
 apt update
 apt install -y libgl1
 apt install -y libgl1-mesa-glx
+# 安装Git LFS来管理处理后的数据集的文本提示词
 apt-get update
 apt-get install -y curl gnupg ca-certificates
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
