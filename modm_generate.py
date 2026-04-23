@@ -121,6 +121,8 @@ for i in progress_bar:
         latent_std = latent.std().item()
         latent = (latent - latent_mean) / (latent_std + 1e-6) * target_std + target_mean
         latent = latent.to(dtype=latent_dtype)
+    mask = torch.rand_like(latent) < Config.ADD_NOISE_SCALE
+    latent[mask] = torch.randn_like(latent)[mask].to(latent.dtype).to(latent.device)
     
     # 生成
     generator = torch.Generator("cuda").manual_seed(Config.GENERATOR_SEED)
