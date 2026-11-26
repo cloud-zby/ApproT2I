@@ -188,3 +188,4 @@ shareAI@2025
 rsync -avzP --ignore-existing --exclude='.git' --exclude='__pycache__'  --exclude='.venv' --exclude='model_ckpt'  --exclude='dataset'  --exclude='.log' --exclude='.pkl' --exclude='.json'  /gemini-1/platform/public/zby/ApproximateT2I  zby@root@ssh-502.default@218.84.152.122://gemini/platform/public/ai_infra/zby/
 ```
 
+注：这是论文《Align Before You Reuse: Mitigating Semantic Leakage in Text-to-Image Diffusion Caching》由我提出并进行的早期方案与初步实验，实际论文中的具体方案与实验与本代码仓库不同。
